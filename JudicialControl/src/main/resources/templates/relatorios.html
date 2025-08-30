@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatórios</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/dash.css">
+</head>
+<body>
+
+<aside>
+  <h2>Admin</h2>
+  <ul>
+    <li><a href="/"><i class="fas fa-home"></i> Dashboard</a></li>
+    <li><a href="#"><i class="fas fa-users"></i> Usuário</a></li>
+    <li><a href="/relatorios"><i class="fas fa-chart-line"></i> Relatórios</a></li>
+    <li><a href="#"><i class="fas fa-cog"></i> Configurações</a></li>
+    <li><a href="/logout"><i class="fas fa-right-from-bracket"></i> Sair</a></li>
+  </ul>
+</aside>
+
+<main>
+  <h1>Relatórios</h1>
+
+  <div class="kpi-container">
+    <div class="card">
+      <h3>Atrasados</h3>
+      <p th:text="${resumoStatus.atrasados}">0</p>
+    </div>
+    <div class="card">
+      <h3>Em Dia</h3>
+      <p th:text="${resumoStatus.emDia}">0</p>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <canvas id="statusChart"></canvas>
+    <canvas id="cadastradosMesChart"></canvas>
+  </div>
+
+  <div class="grid-1">
+    <canvas id="tendenciaAtrasosChart"></canvas>
+  </div>
+</main>
+
+<script th:inline="javascript">
+   const resumoStatus = [[${resumoStatus}]];
+   const porMes = [[${porMes}]];
+   const tendencia = [[${tendenciaAtrasos}]];
+
+   new Chart(document.getElementById('statusChart'), {
+     type: 'pie',
+     data: {
+       labels: ['Atrasados', 'Em dia'],
+       datasets: [{
+         data: [resumoStatus.atrasados, resumoStatus.emDia],
+         backgroundColor: ['#e74c3c', '#2ecc71']
+       }]
+     }
+   });
+
+   new Chart(document.getElementById('cadastradosMesChart'), {
+     type: 'bar',
+     data: {
+       labels: Object.keys(porMes),
+       datasets: [{
+         label: 'Cadastrados',
+         data: Object.values(porMes),
+         backgroundColor: '#3498db'
+       }]
+     }
+   });
+
+   new Chart(document.getElementById('tendenciaAtrasosChart'), {
+     type: 'line',
+     data: {
+       labels: Object.keys(tendencia),
+       datasets: [{
+         label: 'Atrasos',
+         data: Object.values(tendencia),
+         borderColor: '#e67e22',
+         fill: false,
+         tension: 0.1
+       }]
+     }
+   });
+</script>
+
+</body>
+</html>

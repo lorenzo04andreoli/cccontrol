@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/dash.css">
+</head>
+<body>
+
+<aside>
+    <h2>Admin</h2>
+    <ul>
+        <li><a href="#"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="#"><i class="fas fa-users"></i> Usuário</a></li>
+        <li><a href="/relatorios"><i class="fas fa-chart-line"></i> Relatórios</a></li>
+        <li><a href="#"><i class="fas fa-cog"></i> Configurações</a></li>
+        <li><a href="/logout"><i class="fas fa-right-from-bracket"></i> Sair</a></li>
+    </ul>
+</aside>
+
+<main>
+    <header>
+        <h1>Bem-vindo ao Painel Administrativo <span th:text="${nome}"></span></h1>
+    </header>
+
+    <section class="chart-container">
+        <h3>Reeducandos</h3>
+
+        <button onclick="abrirModalAdicionar()">
+            <i class="fas fa-user-plus"></i></button>
+        <div class="filtros-container">
+
+            <form method="get" action="/">
+                <input type="text" name="termo" placeholder="Buscar por nome ou CPF" th:value="${termoBusca}" />
+                <select name="frequencia">
+                    <option value="">Todas as frequências</option>
+                    <option value="Mensal" th:selected="${frequenciaSelecionada == 'Mensal'}">Mensal</option>
+                    <option value="Bimestral" th:selected="${frequenciaSelecionada == 'Bimestral'}">Bimestral</option>
+                    <option value="Trimestral" th:selected="${frequenciaSelecionada == 'Trimestral'}">Trimestral</option>
+                </select>
+                <select name="filtro" id="filtro">
+                    <option value="" th:selected="${filtroStatus == null}">Todos</option>
+                    <option value="Atrasado" th:selected="${filtroStatus == 'Atrasado'}">Atrasados</option>
+                    <option value="Em dia" th:selected="${filtroStatus == 'Em dia'}">Em dia</option>
+                </select>
+                <button type="submit"><i class="fas fa-filter"></i>Filtrar</button>
+            </form>
+        </div>
+
+        <div class="total-reeducandos">
+            <strong>Resultados:</strong> <span th:text="${totalReeducandos}"></span>
+        </div>
+
+        <div class="pagination">
+            <span th:text="'Página ' + ${pagina.number + 1} + ' de ' + ${pagina.totalPages}"></span>
+            <div>
+                <a th:href="@{/?(page=${pagina.number - 1}, termo=${termoBusca}, frequencia=${frequenciaSelecionada}, filtro=${filtroStatus})}"
+                   th:if="${pagina.hasPrevious()}">← Anterior</a>
+                <a th:href="@{/?(page=${pagina.number + 1}, termo=${termoBusca}, frequencia=${frequenciaSelecionada}, filtro=${filtroStatus})}"
+                   th:if="${pagina.hasNext()}" style="margin-left: 15px;">Próxima →</a>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th><i class="fas fa-user"></i> Nome</th>
+                <th><i class="fas fa-id-card"></i> CPF</th>
+                <th><i class="fas fa-phone"></i> Telefone</th>
+                <th><i class="fas fa-calendar-check"></i> Último Comparecimento</th>
+                <th><i class="fas fa-clock"></i> Frequência</th>
+                <th><i class="fas fa-circle-info"></i> Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${reeducandos}" th:onclick="'abrirModal(' + ${r.id} + ')'" style="cursor: pointer;">
+                <td th:text="${r.nome}">João</td>
+                <td th:text="${r.cpf}">000.000.000-00</td>
+                <td th:text="${r.telefone}">(00) 00000-0000</td>
+                <td th:text="${#temporals.format(r.dia, 'dd/MM/yyyy')}">01/07/2025</td>
+                <td th:text="${r.frequencia}">Mensal</td>
+                <td th:text="${r.status}"
+                    th:classappend="${r.status == 'Em dia'} ? 'status-verde' : (${r.status == 'Atrasado'} ? 'status-vermelho' : '')">
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<div id="modal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close" onclick="fecharModal()">&times;</span>
+        <form id="formReeducando" method="post">
+            <input type="hidden" id="id" name="id">
+            <label>Nome:</label>
+            <input type="text" id="nome" name="nome" readonly>
+            <label>CPF:</label>
+            <input type="text" id="cpf" name="cpf" readonly>
+            <label>Telefone:</label>
+            <input type="text" id="telefone" name="telefone">
+            <label>Último Comparecimento:</label>
+            <input type="date" id="dia" name="dia">
+            <button type="submit">Atualizar</button>
+        </form>
+        <button onclick="confirmarExclusao()">Excluir Reeducando</button>
+    </div>
+</div>
+
+<div id="modalAdicionar" class="modal hidden">
+    <div class="modal-content">
+        <span class="close" onclick="fecharModalAdicionar()">&times;</span>
+        <form id="formAdicionarReeducando" method="post">
+            <label>Nome:</label>
+            <input type="text" id="novoNome" name="nome" required>
+            <label>CPF:</label>
+            <input type="text" id="novoCpf" name="cpf" required>
+            <label>Telefone:</label>
+            <input type="text" id="novoTelefone" name="telefone">
+            <label>Último Comparecimento:</label>
+            <input type="date" id="novoDia" name="dia">
+            <label>Frequência:</label>
+            <select id="novaFrequencia" name="frequencia" required>
+                <option value="">Selecione</option>
+                <option value="Mensal">Mensal</option>
+                <option value="Bimestral">Bimestral</option>
+                <option value="Trimestral">Trimestral</option>
+            </select>
+            <button type="submit">Salvar</button>
+        </form>
+    </div>
+</div>
+
+<script src="/js/modal-edicao.js"></script>
+<script src="/js/modal-adicao.js"></script>
+<script src="/js/mascaras.js"></script>
+</body>
+</html>
