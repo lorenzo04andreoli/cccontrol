@@ -1,0 +1,44 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>2FA - Perfil</title>
+</head>
+<body>
+<h2>Autenticação de Dois Fatores (2FA)</h2>
+
+<div th:if="${twoFactorEnabled}">
+    <p>2FA já está habilitado na sua conta.</p>
+    <form th:action="@{/profile/2fa/disable}" method="post">
+        <input type="hidden" name="confirm" value="true"/>
+        <button type="submit">Desabilitar 2FA</button>
+    </form>
+</div>
+
+<div th:unless="${twoFactorEnabled}">
+    <p>Escaneie este QR no Google Authenticator ou adicione manualmente usando o secret abaixo.</p>
+
+    <div>
+        <p>Secret: <span th:text="${secret}">SECRET</span></p>
+
+        <!-- Se você gerou otpAuthUrl, pode criar um <img> apontando para um endpoint que gera QR no servidor ou usar Google Chart API: -->
+        <p>QR Code:</p>
+        <!-- Exemplo usando Google Chart API (pode expor secret na URL) -->
+        <img th:src="@{'https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=' + ${otpAuthUrl}}" alt="QR Code"/>
+
+        <p>Ou gere localmente com ZXing em um endpoint /qrcode?data=... e exiba /qrcode?data=${otpAuthUrl}</p>
+
+        <form th:action="@{/profile/2fa/enable}" method="post">
+            <label for="code">Digite o código do app para confirmar habilitação:</label>
+            <input id="code" name="code" pattern="\d{6}" maxlength="6" required>
+            <button type="submit">Habilitar 2FA</button>
+        </form>
+    </div>
+</div>
+
+<div th:if="${param.msg}">
+    <p th:text="${param.msg}"></p>
+</div>
+
+</body>
+</html>

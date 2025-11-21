@@ -1,0 +1,25 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>Verificação 2FA</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class = "Container">
+    <div class = divForm>
+        <h2>Autenticação em dois fatores</h2>
+        <p>Digite o código do aplicativo autenticador </p>
+
+        <form th:action="@{/two-factor/verify}" method="post">
+            <label for="code">Código (6 dígitos)</label>
+            <input type="text" name="code" id="code" maxlength="6" required pattern="\d{6}">
+            <button type="submit">Verificar</button>
+        </form>
+    </div>
+</div>
+<div th:if="${param.error}">
+    Código inválido. Tente novamente.
+</div>
+</body>
+</html>

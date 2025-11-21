@@ -15,16 +15,35 @@
     <div class="divForm">
         <h1>Login</h1>
 
-        <form action="/logar" method="post">
-            <label>CPF</label>
-            <input type="text" id="cpf" name="cpf" placeholder="CPF">
+        <div th:if="${param.error}" class="alert alert-danger">
+            Usuário ou senha inválidos.
+        </div>
 
-            <label for="senha"></label>
-            <input type="password" name="senha" id="senha">
+        <div th:if="${param.logout}" class="alert alert-success">
+            Você saiu do sistema.
+        </div>
+
+        <div th:if="${param.expired}" class="alert alert-warning">
+            ⚠️ Sua sessão foi encerrada porque sua conta foi acessada em outro dispositivo.
+        </div>
+
+        <div th:if="${param.invalid}" class="alert alert-warning">
+            ⚠️ Sua sessão expirou. Faça login novamente.
+        </div>
+
+        <form th:action="@{/logar}" method="post">
+            <label>CPF</label>
+            <input type="text" id="cpf" name="cpf" placeholder="CPF" required>
+
+            <label for="senha">Senha</label>
+            <input type="password" name="senha" id="senha" required>
+
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
             <button type="submit">Entrar</button>
+
             <div th:if="${erro != null}" th:text="${erro}" class="alert alert-danger" role="alert"></div>
-            <p>Registrar <a href="userRegister">clique aqui</a></p>
+            <div th:if="${msg}" class="alert alert-warning" th:text="${msg}"></div>
         </form>
 
     </div>

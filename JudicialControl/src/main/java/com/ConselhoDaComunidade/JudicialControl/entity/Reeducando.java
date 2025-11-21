@@ -23,6 +23,8 @@ public class Reeducando {
     private String frequencia;
     private String status;
 
+    private Integer diaFixo;
+
 
     public Long getId() {
         return id;
@@ -78,5 +80,13 @@ public class Reeducando {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Integer getDiaFixo() {
+        return diaFixo;
+    }
+
+    public void setDiaFixo(Integer diaFixo) {
+        this.diaFixo = diaFixo;
     }
 }
