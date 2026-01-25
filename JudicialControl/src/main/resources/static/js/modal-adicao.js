@@ -1,42 +1,51 @@
-function abrirModalAdicionar() {
-    document.getElementById("modalAdicionar").classList.add("show");
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('modalAdicionar');
+  const form = document.getElementById('formAdicionarReeducando');
+  const btnAbrir = document.getElementById('btnAbrirAdicionar');
+  const btnFechar = document.getElementById('btnFecharModalAdicionar');
 
-function fecharModalAdicionar() {
-    document.getElementById("modalAdicionar").classList.remove("show");
-    document.getElementById("formAdicionarReeducando").reset();
-}
+  if (!modal || !form) return;
 
-document.getElementById('formAdicionarReeducando').addEventListener('submit', function(e) {
+  const abrir = () => modal.classList.add('show');
+  const fechar = () => {
+    modal.classList.remove('show');
+    form.reset();
+  };
+
+  btnAbrir?.addEventListener('click', abrir);
+  btnFechar?.addEventListener('click', (e) => {
+    e.preventDefault();
+    fechar();
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) fechar();
+  });
+
+  form.addEventListener('submit', (e) => {
     e.preventDefault();
 
     const payload = {
-        nome: document.getElementById("novoNome").value,
-        cpf: document.getElementById("novoCpf").value,
-        telefone: document.getElementById("novoTelefone").value,
-        dia: document.getElementById("novoDia").value,
-        frequencia: document.getElementById("novaFrequencia").value
+      nome: document.getElementById("novoNome")?.value,
+      autos: document.getElementById("novoAutos")?.value,
+      cpf: document.getElementById("novoCpf")?.value,
+      telefone: document.getElementById("novoTelefone")?.value,
+      dia: document.getElementById("novoDia")?.value,
+      frequencia: document.getElementById("novaFrequencia")?.value
     };
 
-    fetch('/reeducandos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(response => {
-        if (response.ok) {
-            alert("Reeducando adicionado com sucesso!");
-            fecharModalAdicionar();
-            window.location.reload();
-        } else {
-            return response.text().then(texto => {
-                alert("Erro ao adicionar reeducando:\n" + texto);
-            });
-        }
-    })
-    .catch(error => {
-        console.error("Erro inesperado:", error);
-        alert("Erro inesperado: " + error.message);
+    apiFetch('/reeducandos', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', ...csrfHeader() },
+      body: JSON.stringify(payload)
+    }).then(async (res) => {
+      if (res.ok) {
+        fechar();
+        window.location.reload();
+      } else {
+        alert(await res.text());
+      }
     });
-
+  });
 });

@@ -4,6 +4,8 @@ package com.ConselhoDaComunidade.JudicialControl.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "reeducandos")
@@ -14,6 +16,8 @@ public class Reeducando {
     private Long id;
 
     private String nome;
+
+    @Column(unique = true, nullable = false, length = 11)
     private String cpf;
     private String telefone;
 
@@ -25,6 +29,11 @@ public class Reeducando {
 
     private Integer diaFixo;
 
+    @Column(name = "autos", length = 50)
+    private String autos;
+
+    @OneToMany(mappedBy = "reeducando", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comparecimento> comparecimentos = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -88,5 +97,13 @@ public class Reeducando {
 
     public void setDiaFixo(Integer diaFixo) {
         this.diaFixo = diaFixo;
+    }
+
+    public String getAutos() {
+        return autos;
+    }
+
+    public void setAutos(String autos) {
+        this.autos = autos;
     }
 }

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="pt-br" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
+    <title>Usuário • Perfil</title>
+    <link rel="icon" href="/images/cc-logo.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+
+<body class="app">
+<aside>
+    <h2>Admin</h2>
+    <ul>
+        <li><a href="/"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="/usuario"><i class="fas fa-users"></i> Usuário</a></li>
+        <li><a href="/relatorios"><i class="fas fa-chart-line"></i> Relatórios</a></li>
+        <li><a th:href="@{/profile/2fa}"><i class="fas fa-shield-halved"></i> Autenticação</a></li>
+
+        <li th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+            <a th:href="@{/admin/users/new}"><i class="fas fa-user-plus"></i> Novo Usuário</a>
+        </li>
+
+        <li>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="linkLikeButton">
+                    <i class="fas fa-right-from-bracket"></i> Sair
+                </button>
+            </form>
+        </li>
+    </ul>
+</aside>
+
+<main>
+    <header class="pageHeader">
+        <div>
+            <h1>Perfil do Usuário</h1>
+            <p class="pageHint">Informações do usuário autenticado.</p>
+        </div>
+    </header>
+
+    <section class="profileCard" style="max-width: 980px;">
+        <header class="profileHead">
+            <div>
+                <h2 class="profileTitle">Minha conta</h2>
+                <p class="profileSubtitle">Confira seus dados de acesso.</p>
+            </div>
+
+        </header>
+
+        <div class="profileGrid">
+            <!-- COLUNA AVATAR -->
+            <div class="profileAvatarCol">
+                <div class="avatarWrap" role="button" tabindex="0" id="avatarClick">
+                    <img id="imgPerfil"
+                         th:src="${fotoUrl != null ? fotoUrl : '/images/Avatar.png'}"
+                         alt="Foto de perfil"
+                         onerror="this.onerror=null; this.src='/images/Avatar.png';" />
+
+
+                    <button type="button" class="avatarEditBtn" id="btnEscolherFoto">
+                        <i class="fas fa-camera"></i>
+                        Alterar foto
+                    </button>
+                </div>
+
+                <!-- input escondido -->
+                <input id="inputFoto" class="avatarFile" type="file" name="foto"
+                       accept="image/png,image/jpeg,image/webp" />
+
+                <p class="profileHint">
+                    Formatos: PNG, JPG ou WEBP. Recomendado: imagem quadrada.
+                </p>
+
+                <p id="uploadMsg" class="profileMsg" aria-live="polite"></p>
+            </div>
+
+            <!-- COLUNA DADOS -->
+            <div class="profileInfoCol">
+                <div class="infoGrid">
+                    <div class="infoItem">
+                        <span class="infoLabel">Nome</span>
+                        <span class="infoValue" th:text="${user.nome}">—</span>
+                    </div>
+
+                    <div class="infoItem">
+                        <span class="infoLabel">CPF</span>
+                        <span class="infoValue" th:text="${user.cpf}">—</span>
+                    </div>
+
+                    <div class="infoItem">
+                        <span class="infoLabel">Tipo de acesso</span>
+                        <span class="infoValue" th:text="${roleLabel}">—</span>
+                    </div>
+
+                    <div class="infoItem">
+                        <span class="infoLabel">2FA</span>
+                        <span class="infoValue"
+                              th:text="${user.twoFactorEnabled ? 'Habilitado' : 'Desabilitado'}">—</span>
+                    </div>
+                </div>
+
+                <div class="profileActions">
+                    <a th:href="@{/profile/2fa}" class="btn-primary btn-primary--small">
+                        <i class="fas fa-shield-halved"></i> Gerenciar 2FA
+                    </a>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script src="/js/usuario-perfil.js"></script>
+</body>
+</html>

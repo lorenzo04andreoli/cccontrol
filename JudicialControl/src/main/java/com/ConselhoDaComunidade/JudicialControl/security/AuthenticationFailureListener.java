@@ -22,7 +22,7 @@ public class AuthenticationFailureListener {
 
     @EventListener
     public void onAuthenticationFailure(AuthenticationFailureBadCredentialsEvent event) {
-        String cpf = (String) event.getAuthentication().getPrincipal();
+        String cpf = String.valueOf(event.getAuthentication().getPrincipal()).replaceAll("\\D", "");
 
         // Não revelar se o usuário existe
         userRepository.findByCpf(cpf).ifPresent(user -> {

@@ -1,11 +1,20 @@
 package com.ConselhoDaComunidade.JudicialControl.service;
 
+import com.ConselhoDaComunidade.JudicialControl.DTO.CompetenciaOptionDto;
+import com.ConselhoDaComunidade.JudicialControl.DTO.ProximoCumprimentoDto;
+import com.ConselhoDaComunidade.JudicialControl.entity.Arquivado;
+import com.ConselhoDaComunidade.JudicialControl.entity.Comparecimento;
 import com.ConselhoDaComunidade.JudicialControl.entity.Reeducando;
+import com.ConselhoDaComunidade.JudicialControl.repository.ArquivadoRepository;
+import com.ConselhoDaComunidade.JudicialControl.repository.ComparecimentoRepository;
 import com.ConselhoDaComunidade.JudicialControl.repository.ReeducandoRepository;
+import com.ConselhoDaComunidade.JudicialControl.specification.ReeducandoSpecifications;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -16,8 +25,16 @@ import java.util.stream.Collectors;
 
 @Service
 public class ReeducandoService {
+
+    private static final int JANELA_PENDENTE_DIAS = 5;
+
     @Autowired
     private ReeducandoRepository r;
+
+    @Autowired
+    private ComparecimentoRepository comparecimentoRepository;
+
+    @Autowired private ArquivadoRepository arquivadoRepository;
 
     public List<Reeducando> listarTodosOrdenados(){
         return r.findAll(Sort.by(Sort.Direction.ASC, "nome"));
@@ -29,103 +46,109 @@ public class ReeducandoService {
         r.save(reeducando);
     }
 
-    public List<Reeducando> listarAtrasados(){
-        return r.findAll().stream()
-                .filter(this::estaAtrasado)
-                .sorted(Comparator.comparing(Reeducando::getNome, String.CASE_INSENSITIVE_ORDER))
-                .collect(Collectors.toList());
+    public List<Reeducando> listarAtrasados() {
+        return r.findByStatusIgnoreCaseOrderByNomeAsc("Atrasado");
     }
 
+    public List<Reeducando> listarPendentes() {
+        return r.findByStatusIgnoreCaseOrderByNomeAsc("Pendente");
+    }
+
+
     public List<Reeducando> listarPorStatus(String status) {
-        return r.findByStatus(status);
+        return r.findByStatusIgnoreCase(status);
+    }
+
+    private int limiteDiasPorFrequencia(String frequencia){
+        if (frequencia == null) return -1;
+
+        return switch (frequencia.trim().toLowerCase()){
+            case "mensal" -> 30;
+            case "bimestral" -> 60;
+            case "trimestral" -> 90;
+            default -> -1;
+        };
+    }
+
+    public String calcularStatus(Reeducando reeducando){
+        if (reeducando.getDia() == null || reeducando.getFrequencia() == null){
+            return "Em dia";
+        }
+
+        int limite = limiteDiasPorFrequencia(reeducando.getFrequencia());
+        if (limite < 0 ) return "Em dia";
+
+        long dias = ChronoUnit.DAYS.between(reeducando.getDia(), LocalDate.now());
+
+        if (dias <= limite) return "Em dia";
+        if (dias <= limite + JANELA_PENDENTE_DIAS) return "Pendente";
+        return "Atrasado";
     }
 
     public boolean estaAtrasado(Reeducando reeducando){
-        if (reeducando.getDia() == null || reeducando.getFrequencia() == null) return false;
+        return "Atrasado".equalsIgnoreCase(calcularStatus(reeducando));
+    }
 
-        LocalDate dataUltimoComparecimento = reeducando.getDia();
-        LocalDate hoje = LocalDate.now();
-        long dias = ChronoUnit.DAYS.between(dataUltimoComparecimento, hoje);
-
-        switch (reeducando.getFrequencia().toLowerCase()){
-            case "mensal":
-                return dias > 30;
-            case "bimestral":
-                return dias > 60;
-            case "trimestral":
-                return dias > 90;
-            default:
-                return false;
-        }
+    public boolean estaPendente(Reeducando reeducando) {
+        return "Pendente".equalsIgnoreCase(calcularStatus(reeducando));
     }
 
     public List<Reeducando> filtrarPorFrequencia(String frequencia) {
         return r.findByFrequenciaIgnoreCase(frequencia);
     }
 
-    public List<Reeducando> buscarPorNomeOuCpf(String termo) {
-        return r.findByNomeContainingIgnoreCaseOrCpfContainingIgnoreCase(termo, termo);
-    }
+    public Page<Reeducando> buscarPorFiltros(String frequencia, String termo, String status,
+                                             String competencia, int page, int size) {
 
-    public List<Reeducando> buscarPorFiltros(String frequencia, String termo) {
-        List<Reeducando> lista = r.findAll();
-
-        if (frequencia != null && !frequencia.isEmpty()) {
-            lista = lista.stream()
-                    .filter(r -> r.getFrequencia().equalsIgnoreCase(frequencia))
-                    .collect(Collectors.toList());
-        }
-
-        if (termo != null && !termo.isEmpty()) {
-            String termoLower = termo.toLowerCase();
-            lista = lista.stream()
-                    .filter(r -> r.getNome().toLowerCase().contains(termoLower)
-                            || r.getCpf().toLowerCase().contains(termoLower))
-                    .collect(Collectors.toList());
-        }
-
-        return lista;
-    }
-
-    public Page<Reeducando> buscarPorFiltros(String frequencia, String termo, String status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("nome").ascending());
-        List<Reeducando> lista = r.findAll();
 
-        if (frequencia != null && !frequencia.isEmpty()) {
-            lista = lista.stream()
-                    .filter(r -> r.getFrequencia().equalsIgnoreCase(frequencia))
-                    .collect(Collectors.toList());
+        LocalDate inicioMes = null;
+        LocalDate fimMes = null;
+
+        boolean hasComp = competencia != null && !competencia.isBlank();
+        if (hasComp) {
+
+            YearMonth ym = YearMonth.parse(competencia);
+            inicioMes = ym.atDay(1);
+            fimMes = ym.plusMonths(1).atDay(1);
         }
 
-        if (termo != null && !termo.isEmpty()) {
-            String termoLower = termo.toLowerCase();
-            lista = lista.stream()
-                    .filter(r -> r.getNome().toLowerCase().contains(termoLower)
-                            || r.getCpf().toLowerCase().contains(termoLower))
-                    .collect(Collectors.toList());
-        }
+        boolean hasTermo = termo != null && !termo.isBlank();
+        String termoCpf = hasTermo ? termo.replaceAll("\\D", "") : "";
+        boolean termoPareceCpf = hasTermo && !termoCpf.isBlank();
 
-        if (status != null && !status.isBlank()) {
-            String statusFiltrado = status.trim().toLowerCase();
-            lista = lista.stream()
-                    .filter(r -> r.getStatus() != null &&
-                            r.getStatus().trim().toLowerCase().equals(statusFiltrado))
-                    .collect(Collectors.toList());
-        }
+        String termoFinal = termoPareceCpf ? termoCpf : termo;
 
-        lista = lista.stream()
-                .sorted(Comparator.comparing(Reeducando::getNome, String.CASE_INSENSITIVE_ORDER))
-                .collect(Collectors.toList());
+        Specification<Reeducando> spec = ReeducandoSpecifications.filtrar(
+                frequencia,
+                termoFinal,
+                status,
+                inicioMes,
+                fimMes,
+                termoPareceCpf
+        );
 
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), lista.size());
-
-        if (start > lista.size()) {
-            return new PageImpl<>(Collections.emptyList(), pageable, lista.size());
-        }
-
-        return new PageImpl<>(lista.subList(start, end), pageable, lista.size());
+        return r.findAll(spec, pageable);
     }
+
+
+    public List<CompetenciaOptionDto> listarCompetenciasExistentes() {
+        List<Object[]> rows = r.listarCompetenciasExistentes();
+
+        List<CompetenciaOptionDto> out = new ArrayList<>();
+        for (Object[] row : rows) {
+            int ano = ((Number) row[0]).intValue();
+            int mes = ((Number) row[1]).intValue();
+
+            String value = String.format("%04d-%02d", ano, mes);
+            String label = String.format("%02d/%04d", mes, ano);
+
+            out.add(new CompetenciaOptionDto(value, label));
+        }
+        return out;
+    }
+
+
 
     public Reeducando buscarPorId(Long id) {
         return r.findById(id).orElseThrow(() -> new RuntimeException("Reeducando não encontrado"));
@@ -136,70 +159,116 @@ public class ReeducandoService {
         rcd.setTelefone(dados.get("telefone"));
 
         if (dados.get("dia") != null && !dados.get("dia").isEmpty()) {
-            rcd.setDia(LocalDate.parse(dados.get("dia")));
+            LocalDate novoDia = LocalDate.parse(dados.get("dia"));
 
-            boolean atrasado = estaAtrasado(rcd);
-            rcd.setStatus(atrasado ? "Atrasado" : "Em dia");
+
+            rcd.setDia(novoDia);
+
+            Comparecimento c = new Comparecimento();
+            c.setReeducando(rcd);
+            c.setData(novoDia);
+            try {
+                comparecimentoRepository.save(c);
+            } catch (Exception ignored) { }
+
+            rcd.setStatus(calcularStatus(rcd));
         }
 
         r.save(rcd);
     }
 
+
     public void excluir(Long id) {
         r.deleteById(id);
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 */15 * * * *")
     public void verificarAtrasosAutomaticamente() {
         List<Reeducando> todos = r.findAll();
+        List<Reeducando> alterados = new ArrayList<>();
 
-        for (Reeducando reeducando : todos) {
-            boolean atrasado = estaAtrasado(reeducando);
-
-            if (atrasado && !"Atrasado".equalsIgnoreCase(reeducando.getStatus())) {
-                reeducando.setStatus("Atrasado");
-                r.save(reeducando);
-            } else if (!atrasado && !"Em dia".equalsIgnoreCase(reeducando.getStatus())) {
-                reeducando.setStatus("Em dia");
-                r.save(reeducando);
+        for (Reeducando re : todos) {
+            String calc = calcularStatus(re);
+            String atual = re.getStatus() == null ? "" : re.getStatus().trim();
+            if (!atual.equalsIgnoreCase(calc)) {
+                re.setStatus(calc);
+                alterados.add(re);
             }
         }
 
-        System.out.println("[TAREFA AGENDADA] Verificação de atrasos concluída.");
+        if (!alterados.isEmpty()) r.saveAll(alterados);
+
+        System.out.println("[TAREFA AGENDADA] Verificação de atrasos concluída. Alterados=" + alterados.size());
     }
 
     public Map<String, Long> getResumoStatus() {
-        List<Reeducando> todos = r.findAll();
-        long atrasados = todos.stream().filter(this::estaAtrasado).count();
-        long emDia = todos.size() - atrasados;
+        long atrasados = r.countByStatusIgnoreCase("Atrasado");
+        long pendentes = r.countByStatusIgnoreCase("Pendente");
+        long emDia     = r.countByStatusIgnoreCase("Em dia");
 
         return Map.of(
                 "atrasados", atrasados,
+                "pendentes", pendentes,
                 "emDia", emDia
         );
     }
 
-    public Map<String, Long> getCadastradosPorMes() {
-        LocalDate hoje = LocalDate.now();
-        YearMonth seisMesesAtras = YearMonth.from(hoje).minusMonths(5);
 
-        return r.findAll().stream()
-                .filter(re -> {
-                    YearMonth ym = YearMonth.from(re.getDia());
-                    return !ym.isBefore(seisMesesAtras) && !ym.isAfter(YearMonth.from(hoje));
-                })
-                .collect(Collectors.groupingBy(
-                        re -> YearMonth.from(re.getDia()),
-                        Collectors.counting()
-                ))
-                .entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .collect(Collectors.toMap(
-                        e -> e.getKey().getMonth().getDisplayName(TextStyle.FULL, new Locale("pt", "BR")),
-                        Map.Entry::getValue,
-                        (a, b) -> a,
-                        LinkedHashMap::new
-                ));
+    public Map<String, Long> getComparecimentosPorMes() {
+        var rows = comparecimentoRepository.contarComparecimentosPorMes();
+
+
+        List<Object[]> asc = new ArrayList<>(rows);
+        Collections.reverse(asc);
+
+        Map<String, Long> out = new LinkedHashMap<>();
+        Locale ptBR = new Locale("pt", "BR");
+
+        for (Object[] row : asc) {
+            int ano = ((Number) row[0]).intValue();
+            int mes = ((Number) row[1]).intValue();
+            long total = ((Number) row[2]).longValue();
+
+            String label = String.format("%02d/%04d", mes, ano);
+            out.put(label, total);
+        }
+
+        return out;
+    }
+
+
+    @Transactional
+    public void arquivar(Long reeducandoId, String observacao) {
+        if (observacao == null || observacao.isBlank()) {
+            throw new RuntimeException("Observação é obrigatória.");
+        }
+
+        Reeducando re = r.findById(reeducandoId)
+                .orElseThrow(() -> new RuntimeException("Reeducando não encontrado"));
+
+        String cpf = re.getCpf() == null ? null : re.getCpf().replaceAll("\\D", "");
+
+
+        if (arquivadoRepository.existsByCpf(cpf)) {
+            throw new RuntimeException("Já existe um arquivado com este CPF.");
+        }
+
+        if (cpf == null || cpf.isBlank()) {
+            throw new RuntimeException("CPF inválido.");
+        }
+
+        Arquivado arq = new Arquivado();
+        arq.setNome(re.getNome());
+        arq.setCpf(cpf);
+        arq.setTelefone(re.getTelefone());
+        arq.setDia(re.getDia());
+        arq.setFrequencia(re.getFrequencia());
+        arq.setAutos(re.getAutos());
+        arq.setObservacao(observacao.trim());
+
+        arquivadoRepository.save(arq);
+
+        r.delete(re);
     }
 
     public Map<String, Long> getTendenciaAtrasosUltimosMeses() {
@@ -225,5 +294,40 @@ public class ReeducandoService {
                         LinkedHashMap::new
                 ));
     }
+
+
+    public List<ProximoCumprimentoDto> getProximosCumprimentos(int diasJanela) {
+        LocalDate hoje = LocalDate.now();
+        LocalDate limite = hoje.plusDays(diasJanela);
+
+        return r.findAll().stream()
+                .filter(re -> re.getDia() != null && re.getFrequencia() != null)
+                .map(re -> {
+                    LocalDate prox = calcularProximoComparecimento(re.getDia(), re.getFrequencia());
+                    long diasRestantes = ChronoUnit.DAYS.between(hoje, prox);
+                    return new ProximoCumprimentoDto(
+                            re.getId(),
+                            re.getNome(),
+                            re.getCpf(),
+                            re.getTelefone(),
+                            re.getFrequencia(),
+                            re.getDia(),
+                            prox,
+                            diasRestantes
+                    );
+                })
+                .filter(dto -> !dto.proximoComparecimento().isBefore(hoje) &&
+                        !dto.proximoComparecimento().isAfter(limite))
+                .sorted(Comparator.comparing(ProximoCumprimentoDto::proximoComparecimento)
+                        .thenComparing(ProximoCumprimentoDto::nome, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+    }
+
+    private LocalDate calcularProximoComparecimento(LocalDate ultimo, String frequencia) {
+        int limiteDias = limiteDiasPorFrequencia(frequencia);
+        if (limiteDias < 0) return ultimo; // fallback
+        return ultimo.plusDays(limiteDias);
+    }
+
 
 }

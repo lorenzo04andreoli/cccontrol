@@ -3,42 +3,115 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Novo Usuário</title>
+    <title>Novo Usuário • Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/app.css">
+    <link rel="icon" href="/images/cc-logo.png" type="image/png">
 </head>
-<body>
 
-<div class="Container">
-    <div class="divForm">
-        <h1>Cadastrar Novo Usuário</h1>
+<body class="app">
 
-        <form th:action="@{/admin/users}" method="post" th:object="${userDto}">
+<aside>
+    <h2>Admin</h2>
+    <ul>
+        <li><a href="/"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="/usuario"><i class="fas fa-users"></i> Usuário</a></li>
+        <li><a href="/relatorios"><i class="fas fa-chart-line"></i> Relatórios</a></li>
+        <li><a th:href="@{/profile/2fa}"><i class="fas fa-shield-halved"></i> Autenticação</a></li>
+
+        <li th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+            <a th:href="@{/admin/users/new}"><i class="fas fa-user-plus"></i> Novo Usuário</a>
+        </li>
+
+        <li>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="linkLikeButton">
+                    <i class="fas fa-right-from-bracket"></i> Sair
+                </button>
+            </form>
+        </li>
+    </ul>
+</aside>
+
+<main>
+    <header class="pageHeader">
+        <div>
+            <h1>Novo Usuário</h1>
+            <p class="pageHint">Cadastro disponível apenas para administradores.</p>
+        </div>
+    </header>
+
+    <section class="authCard authCard--wide" role="region" aria-label="Cadastro de novo usuário">
+        <header class="authHeader">
+            <img class="authLogo" src="/images/cc-logo.png" alt="Logo do Conselho">
+            <h2 class="authTitle">Cadastrar Novo Usuário</h2>
+            <p class="authSubtitle">Preencha os dados abaixo para criar uma nova conta.</p>
+        </header>
+
+        <form class="authForm"
+              th:action="@{/admin/users}"
+              method="post"
+              th:object="${userDto}"
+              autocomplete="off">
+
+            <!-- CSRF -->
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-            <label for="nome">Nome Completo</label>
-            <input type="text" id="nome" name="nome" th:field="*{nome}" placeholder="Nome completo">
-            <span th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}" class="erro"></span>
+            <div class="authField">
+                <label for="nome">Nome Completo</label>
+                <input type="text" id="nome" th:field="*{nome}" placeholder="Nome completo">
+                <span th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}" class="erro"></span>
+            </div>
 
-            <label for="cpf">CPF</label>
-            <input type="text" id="cpf" name="cpf" th:field="*{cpf}" placeholder="CPF">
-            <span th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}" class="erro"></span>
+            <div class="authField">
+                <label for="cpf">CPF</label>
+                <input type="text" id="cpf" th:field="*{cpf}" placeholder="000.000.000-00" inputmode="numeric">
+                <span th:if="${#fields.hasErrors('cpf')}" th:errors="*{cpf}" class="erro"></span>
+            </div>
 
-            <label for="senha">Senha</label>
-            <input type="password" id="senha" name="senha" th:field="*{senha}" placeholder="Senha (mínimo 12 caracteres)">
-            <span th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}" class="erro"></span>
+            <div class="authField">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" th:field="*{senha}" placeholder="Mínimo 12 caracteres">
+                <span th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}" class="erro"></span>
+            </div>
 
-            <label for="confirmPassword">Confirmar Senha</label>
-            <input type="password" id="confirmPassword" name="confirmPassword"
-                   th:field="*{confirmPassword}" placeholder="Confirmar Senha">
-            <span th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" class="erro"></span>
+            <div class="authField">
+                <label for="confirmPassword">Confirmar Senha</label>
+                <input type="password" id="confirmPassword" th:field="*{confirmPassword}" placeholder="Repita a senha">
+                <span th:if="${#fields.hasErrors('confirmPassword')}"
+                      th:errors="*{confirmPassword}"
+                      class="erro"></span>
+            </div>
 
-            <button type="submit"><i class="fas fa-user-plus"></i> Cadastrar</button>
+            <div class="authField">
+                <label for="role">Tipo de acesso</label>
+                <select id="role" th:field="*{role}">
+                    <option value="">Selecione</option>
+                    <option value="ADMIN">Administrador</option>
+                    <option value="USER">Colaborador</option>
+                    <option value="VIEWER">Consultor</option>
+                    <option value="AUDIENCE">Audiência</option>
+                </select>
+                <span th:if="${#fields.hasErrors('role')}" th:errors="*{role}" class="erro"></span>
+            </div>
 
-            <p><a href="/">← Voltar ao Dashboard</a></p>
+            <button class="authBtn" type="submit">
+                <i class="fas fa-user-plus"></i> Cadastrar
+            </button>
+
+            <a class="authLink" th:href="@{/admin/users}">
+                <i class="fas fa-list"></i> Ver usuários
+            </a>
         </form>
-    </div>
-</div>
+    </section>
 
+</main>
+<script src="/js/mascaras-cpf.js"></script>
 </body>
 </html>

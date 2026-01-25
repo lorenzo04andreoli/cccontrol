@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Usuários • Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/app.css">
+    <link rel="icon" href="/images/cc-logo.png" type="image/png">
+</head>
+
+<body class="app">
+<aside>
+    <h2>Admin</h2>
+    <ul>
+        <li><a href="/"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="/usuario"><i class="fas fa-users"></i> Usuário</a></li>
+        <li><a href="/relatorios"><i class="fas fa-chart-line"></i> Relatórios</a></li>
+        <li><a th:href="@{/profile/2fa}"><i class="fas fa-shield-halved"></i> Autenticação</a></li>
+
+        <li th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+            <a th:href="@{/admin/users/new}"><i class="fas fa-user-plus"></i> Novo Usuário</a>
+        </li>
+
+        <li>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="linkLikeButton">
+                    <i class="fas fa-right-from-bracket"></i> Sair
+                </button>
+            </form>
+        </li>
+    </ul>
+</aside>
+
+<main>
+    <header class="pageHeader">
+        <div>
+            <h1>Usuários</h1>
+            <p class="pageHint">
+                Lista de usuários cadastrados no sistema.
+                <span th:text="'Total: ' + ${totalUsers}"></span>
+            </p>
+        </div>
+
+    </header>
+
+    <section class="authCard authCard--wide" role="region" aria-label="Lista de usuários">
+        <header class="authHeader">
+            <img class="authLogo" src="/images/cc-logo.png" alt="Logo do Conselho">
+            <h2 class="authTitle">Usuários Cadastrados</h2>
+            <p class="authSubtitle">Nome, CPF e status de sessão (online/offline).</p>
+        </header>
+
+        <div style="overflow:auto;">
+            <table class="tabela" style="width:100%; border-collapse: collapse;">
+                <thead>
+                <tr>
+                    <th style="text-align:left; padding:12px;">Nome</th>
+                    <th style="text-align:left; padding:12px;">CPF</th>
+                    <th style="text-align:left; padding:12px;">Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(users)}">
+                    <td colspan="3" style="padding:12px;">Nenhum usuário cadastrado.</td>
+                </tr>
+
+                <tr th:each="u : ${users}">
+                    <td style="padding:12px;" th:text="${u.nome}"></td>
+                    <td style="padding:12px;" th:text="${u.cpf}"></td>
+                    <td style="padding:12px;">
+                        <span th:if="${u.online}" style="display:inline-flex; gap:8px; align-items:center;">
+                            <i class="fas fa-circle" style="font-size:10px;"></i>
+                            <strong>Online</strong>
+                        </span>
+                        <span th:if="${!u.online}" style="display:inline-flex; gap:8px; align-items:center;">
+                            <i class="fas fa-circle" style="font-size:10px; opacity:.45;"></i>
+                            <span>Offline</span>
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

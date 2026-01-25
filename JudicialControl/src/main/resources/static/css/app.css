@@ -1,0 +1,1474 @@
+/*
+   Organização:
+   1) Layout base + fundo
+   2) Sidebar
+   3) Main + headers
+   4) Componentes (cards, tabelas, paginação, modal, KPI, charts)
+   5) Form padrão (inputs, botões, form actions)
+   6) Admin / Novo Usuário
+   7) Profile / 2FA
+   8) Limitação de largura dos forms
+   9) Responsivo
+*/
+
+/* =========================
+   1) LAYOUT BASE + FUNDO
+========================= */
+body.app{
+  display:flex;
+  min-height:100vh;
+  background: var(--bg-main);
+  color: var(--text);
+  overflow-x:hidden;
+  position: relative;
+}
+
+/* Fundo do app */
+body.app::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 520px at 15% 20%, color-mix(in srgb, var(--primary) 16%, transparent), transparent 65%),
+    radial-gradient(900px 520px at 85% 18%, color-mix(in srgb, var(--secondary) 14%, transparent), transparent 62%),
+    linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
+}
+
+body.app::after{
+  content:"";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(15,23,42,0.08) 1px, transparent 1px);
+  background-size: 18px 18px;
+  opacity: 0.16;
+  mask-image: radial-gradient(circle at 30% 30%, rgba(0,0,0,0.9), transparent 70%);
+}
+
+/* =========================
+   2) SIDEBAR
+========================= */
+body.app aside{
+  width: 270px;
+  position: fixed;
+  inset: 18px auto 18px 18px;
+  height: calc(100vh - 36px);
+  border-radius: 22px;
+  padding: 18px 14px;
+  background:
+    radial-gradient(900px 520px at 40% 30%, color-mix(in srgb, var(--secondary) 14%, transparent), transparent 60%),
+    radial-gradient(800px 520px at 70% 80%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 62%),
+    rgba(11,18,32,0.92);
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(10px);
+}
+
+
+
+body.app aside h2{
+  margin: 6px 10px 16px;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.85);
+}
+
+body.app aside ul{
+  list-style:none;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding: 0 6px;
+}
+
+body.app aside ul li a{
+  text-decoration:none;
+  color: rgba(255,255,255,0.88);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding: 11px 12px;
+  border-radius: 14px;
+  transition: background .18s var(--ease), transform .14s var(--ease);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+body.app aside ul li a i{
+  width:18px;
+  text-align:center;
+  opacity:.95;
+}
+
+body.app aside ul li a:hover{
+  background: rgba(255,255,255,0.10);
+  transform: translateY(-1px);
+}
+
+body.app aside ul li:last-child a{
+  margin-top: 10px;
+  background: rgba(255,255,255,0.08);
+}
+
+body.app aside ul li .linkLikeButton{
+  width: 100%;
+  text-decoration: none;
+  color: rgba(255,255,255,0.88);
+
+  display:flex;
+  align-items:center;
+  gap:12px;
+
+  padding: 11px 12px;
+  border-radius: 14px;
+
+  font-weight: 600;
+  font-size: 14px;
+
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+
+  transition: background .18s var(--ease), transform .14s var(--ease);
+}
+
+body.app aside ul li .linkLikeButton i{
+  width:18px;
+  text-align:center;
+  opacity:.95;
+}
+
+body.app aside ul li .linkLikeButton:hover{
+  background: rgba(255,255,255,0.10);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+body.app aside ul li:last-child .linkLikeButton{
+  margin-top: 10px;
+  background: rgba(255,255,255,0.08);
+}
+
+body.app aside ul li:last-child .linkLikeButton:hover{
+  background: rgba(255,255,255,0.12);
+}
+
+
+/* =========================
+   3) MAIN + HEADERS
+========================= */
+body.app main{
+  margin-left: 306px;
+  padding: 22px 28px;
+  width: calc(100% - 306px);
+}
+
+/* Header padrão do app */
+body.app main > header,
+body.app .pageHeader{
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 18px 22px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+  margin-bottom: 16px;
+}
+
+body.app main > header h1,
+body.app .pageHeader h1{
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+body.app main > header h1 span{
+  color: var(--primary);
+  font-weight: 900;
+}
+
+body.app .pageHint{
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+/* =========================
+   4) COMPONENTES GERAIS
+========================= */
+
+/* Card container */
+body.app .chart-container{
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 18px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+}
+
+/* Título + botão */
+body.app .section-header{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+/* Paginação */
+body.app .total-reeducandos{
+  margin: 10px 0 6px;
+  color: var(--text-light);
+  font-size: 13px;
+}
+
+body.app .pagination{
+  margin: 14px 0 10px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+body.app .pagination a{
+  text-decoration:none;
+  color: var(--primary);
+  font-weight: 800;
+  padding: 8px 10px;
+  border-radius: 12px;
+  transition: background .2s ease;
+}
+
+body.app .pagination a:hover{
+  background: rgba(79, 70, 229, 0.08);
+}
+
+/* Tabela */
+body.app table{
+  width:100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 12px;
+  overflow:hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.75);
+}
+
+body.app thead{
+  background: rgba(246,248,251,0.9);
+}
+
+body.app th,
+body.app td{
+  padding: 12px 14px;
+  text-align:left;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(15,23,42,0.08);
+}
+
+body.app th{
+  color: rgba(11,18,32,0.88);
+  font-weight: 900;
+}
+
+body.app th i{
+  margin-right: 8px;
+  color: var(--secondary);
+  opacity: .95;
+}
+
+body.app tbody tr{
+  background: rgba(255,255,255,0.65);
+  transition: background .15s var(--ease);
+}
+
+body.app tbody tr:hover{
+  background: rgba(255,255,255,0.95);
+}
+
+body.app tbody tr:last-child td{
+  border-bottom: none;
+}
+
+/* Status */
+body.app .status-verde{ color: #16a34a; font-weight: 900; }
+body.app .status-amarelo{ color: #eab308; font-weight: 900; }
+body.app .status-vermelho{ color: #dc2626; font-weight: 900; }
+
+/* Modal */
+body.app .modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background: rgba(2, 6, 23, 0.55);
+  justify-content:center;
+  align-items:center;
+  z-index:1000;
+  padding: 16px;
+}
+
+body.app .modal.show{ display:flex; }
+body.app .modal{ display:none; }
+
+body.app .modal-content{
+  position:relative;
+  background:#fff;
+  padding: 22px;
+  border-radius: 18px;
+  width: 520px;
+  max-width: 100%;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+}
+
+body.app .modal-content label{
+  display:block;
+  margin-top: 12px;
+  font-weight: 800;
+  font-size: 13px;
+  color: #334155;
+}
+
+body.app .modal-content input,
+body.app .modal-content select{
+  width:100%;
+  margin-top: 6px;
+}
+
+.procRow{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin: 6px 0 14px;
+}
+
+.procText{
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 15px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: .02em;
+  user-select: text;
+}
+
+.btn-copy{
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  color: #64748b;
+  border-radius: 8px;
+  transition: color .15s ease, background .15s ease;
+}
+
+.btn-copy:hover{
+  color: #0f172a;
+  background: rgba(0,0,0,0.05);
+}
+
+/* Botão excluir do modal */
+body.app .modal-content button[onclick*="confirmarExclusao"]{
+  background: var(--danger);
+}
+
+body.app .modal-content button[onclick*="confirmarExclusao"]:hover{
+  background: var(--danger-hover);
+}
+
+/* Close */
+body.app .modal-content .close{
+  position:absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 22px;
+  font-weight: 900;
+  color:#94a3b8;
+  cursor:pointer;
+  transition: color .2s;
+  user-select:none;
+}
+.row-clickable { cursor: pointer; }
+
+body.app .modal-content .close:hover{
+  color:#0f172a;
+}
+
+body.app .modalActions{
+  display:flex;
+  gap: 12px;
+  margin-top: 16px;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+
+body.app .modalActions .btn-primary,
+body.app .modalActions .btnDanger{
+  width: 220px;
+  max-width: 100%;
+  height: 44px;
+  padding: 10px 14px;
+  border-radius: 14px;
+}
+
+
+/* KPI */
+body.app .kpi-container{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+body.app .kpiCard{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+body.app .kpiCard::before{
+  content:"";
+  position:absolute;
+  left: 0; right: 0; top: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  opacity: .9;
+}
+
+body.app .kpiValue{
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+body.app .kpiMeta{
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+/* Charts */
+body.app .chartsGrid{
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+body.app .chartsGrid--2{
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+}
+
+body.app .chartsGrid--1{
+  grid-template-columns: 1fr;
+}
+
+body.app .chartCard{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+}
+
+body.app .chartHead{
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(15,23,42,0.08);
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap: 12px;
+}
+
+body.app .chartBody{
+  padding: 14px 16px 16px;
+  height: 320px;
+}
+
+body.app .chartBody--tall{
+  height: 360px;
+}
+
+body.app .chartBody canvas{
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* =========================
+   5) FORM PADRÃO (APP)
+========================= */
+
+/* Inputs (geral) */
+body.app input[type="text"],
+body.app input[type="date"],
+body.app input[type="number"],
+body.app select{
+  padding: 11px 12px;
+  border: 1px solid rgba(15,23,42,0.12);
+  border-radius: 14px;
+  font-size: 14px;
+  background: var(--card-strong);
+  outline: none;
+  transition: border-color .18s var(--ease), box-shadow .18s var(--ease), transform .18s var(--ease);
+  color: var(--text);
+}
+
+body.app input:focus,
+body.app select:focus{
+  border-color: color-mix(in srgb, var(--primary) 55%, rgba(15,23,42,0.12));
+  box-shadow: var(--ring);
+  transform: translateY(-1px);
+}
+
+/* Form grid padrão */
+body.app .form{
+  display: grid;
+  gap: 14px;
+}
+
+body.app .field label{
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(11,18,32,0.9);
+  margin-bottom: 6px;
+  display:block;
+}
+
+body.app .inputWrap{
+  background: var(--card-strong);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  transition: box-shadow .18s var(--ease), transform .18s var(--ease);
+}
+
+body.app .inputWrap:focus-within{
+  box-shadow: var(--ring);
+  transform: translateY(-1px);
+}
+
+body.app .inputWrap input{
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  max-width: 100%;
+}
+
+/* Botões do app */
+body.app .btn-primary{
+  padding: 11px 14px;
+  border: none;
+  cursor:pointer;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: 0 18px 40px color-mix(in srgb, var(--primary) 22%, transparent);
+  transition: transform .14s var(--ease), filter .18s var(--ease), box-shadow .18s var(--ease);
+}
+
+body.app .btn-primary:hover{
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+  box-shadow: 0 22px 52px color-mix(in srgb, var(--primary) 26%, transparent);
+}
+
+body.app .btn-primary i{
+  margin-right: 8px;
+}
+
+/* Danger */
+body.app .btnDanger--outline{
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid rgba(220,38,38,0.35);
+  box-shadow: none;
+}
+
+body.app .btnDanger--outline:hover{
+  background: rgba(239,68,68,0.08);
+  transform: translateY(-1px);
+}
+
+.miniModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.miniModal.show { display: flex; }
+
+.miniModalContent {
+  background: #fff;
+  padding: 16px;
+  border-radius: 10px;
+  width: min(420px, 92vw);
+}
+
+.miniActions {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+
+/* Filtros */
+body.app .filtros-container{
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:12px;
+  margin: 10px 0 12px;
+}
+
+body.app .filtros-container form{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+  width:100%;
+}
+
+/* =========================
+   7) ACTIONS
+========================= */
+body.app .formActions{
+  display:flex;
+  gap:12px;
+  margin-top: 10px;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+/* Tamanho padrão */
+body.app .formActions .btn,
+body.app .formActions .btnGhost{
+  width: 240px;
+  max-width: 100%;
+}
+
+body.app .btnGhost{
+  text-decoration:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  border-radius:14px;
+  font-weight:900;
+  background: rgba(255,255,255,0.75);
+  border:1px solid var(--border);
+  color: var(--text);
+}
+
+body.app .btnGhost:hover{
+  background:#fff;
+}
+
+/* =========================
+   8) 2FA (PROFILE / APP)
+========================= */
+body.app .twofaCard{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  overflow:hidden;
+  margin: 0 auto 16px;
+
+  /* Limitação  */
+  max-width: 960px;
+}
+
+body.app .twofaCard::before{
+  content:"";
+  display:block;
+  height:3px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+}
+
+body.app .twofaHead{
+  padding:16px;
+  border-bottom:1px solid rgba(15,23,42,0.08);
+}
+
+body.app .twofaTitle{
+  display:flex;
+  gap:12px;
+}
+
+body.app .twofaIcon{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  background: rgba(255,255,255,0.7);
+  border:1px solid var(--border);
+}
+
+body.app .twofaIcon--ok{
+  background: rgba(34,197,94,0.15);
+  color:#15803d;
+}
+
+body.app .twofaBody{
+  padding:16px;
+}
+
+/* OTP */
+body.app .otp{
+  display:flex;
+  gap:10px;
+}
+
+body.app .otpBox{
+  width:46px;
+  height:56px;
+  text-align:center;
+  font-size:20px;
+  font-weight:800;
+  border-radius:14px;
+  border:1px solid var(--border);
+}
+
+body.app .otpBox:focus{
+  box-shadow: var(--ring);
+}
+
+/* =========================
+   AUTH CARD
+========================= */
+
+body.app .authCard{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+body.app .authCard--wide{
+  max-width: 520px;
+}
+
+body.app .authCard::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:3px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+}
+
+body.app .authHeader{
+  text-align:center;
+  padding: 10px 10px 6px;
+}
+
+body.app .authLogo{
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  display:block;
+  margin: 6px auto 10px;
+}
+
+body.app .authTitle{
+  font-size: 20px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+body.app .authSubtitle{
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+body.app .authForm{
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+body.app .authField label{
+  display:block;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(11,18,32,0.9);
+  margin-bottom: 6px;
+}
+
+body.app .authField input{
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(15,23,42,0.12);
+  border-radius: 14px;
+  font-size: 14px;
+  background: rgba(255,255,255,0.75);
+  outline: none;
+  transition: border-color .18s var(--ease), box-shadow .18s var(--ease), transform .18s var(--ease);
+  color: var(--text);
+}
+
+body.app .authField input:focus{
+  border-color: color-mix(in srgb, var(--primary) 55%, rgba(15,23,42,0.12));
+  box-shadow: var(--ring);
+  transform: translateY(-1px);
+}
+
+body.app .authBtn{
+  margin-top: 6px;
+  width: 100%;
+  border: none;
+  cursor:pointer;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 900;
+  color:#fff;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: 0 18px 40px color-mix(in srgb, var(--primary) 22%, transparent);
+  transition: transform .14s var(--ease), filter .18s var(--ease), box-shadow .18s var(--ease);
+}
+
+body.app .authBtn:hover{
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+  box-shadow: 0 22px 52px color-mix(in srgb, var(--primary) 26%, transparent);
+}
+
+body.app .authBtn i{
+  margin-right: 8px;
+}
+
+body.app .authLink{
+  text-decoration:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-top: 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-weight: 900;
+  background: rgba(255,255,255,0.75);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+body.app .authLink:hover{
+  background:#fff;
+}
+
+
+body.app .twofaCard{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin: 0 auto 16px;
+  max-width: 980px;
+}
+
+body.app .twofaCard::before{
+  content:"";
+  display:block;
+  height:3px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+}
+
+body.app .twofaHead{
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(15,23,42,0.08);
+}
+
+body.app .twofaTitle{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+}
+
+body.app .twofaTitle h2{
+  margin: 0;
+  font-size: 18px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+}
+
+body.app .twofaTitle p{
+  margin: 4px 0 0;
+  color: var(--text-light);
+  font-size: 13px;
+}
+
+body.app .twofaIcon{
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display:grid;
+  place-items:center;
+  background: rgba(255,255,255,0.75);
+  border:1px solid var(--border);
+  flex: 0 0 auto;
+}
+
+body.app .twofaBody{
+  padding: 18px;
+}
+
+body.app .twofaLayout{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+body.app .qrCard{
+  display:flex;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.70);
+}
+
+body.app .qrImg{
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(15,23,42,0.10);
+  padding: 10px;
+  flex: 0 0 auto;
+}
+
+body.app .qrMeta{
+  display:flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+body.app .secretBox{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.85);
+}
+
+body.app .secretLabel{
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(11,18,32,0.75);
+}
+
+body.app .secretValue{
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+body.app .btnGhostSmall{
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.85);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  transition: transform .14s var(--ease), background .18s var(--ease);
+}
+body.app .btnGhostSmall:hover{
+  background:#fff;
+  transform: translateY(-1px);
+}
+
+body.app .twofaNote{
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-light);
+  line-height: 1.35;
+}
+
+body.app .twofaForm{
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.70);
+  height: 100%;
+  display:flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body.app .twofaFormHead h3{
+  margin: 0;
+  font-size: 16px;
+  font-weight: 950;
+}
+body.app .twofaFormHead p{
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+body.app .otp{
+  display:flex;
+  gap:10px;
+  flex-wrap: wrap;
+}
+
+body.app .otpBox{
+  width: 46px;
+  height: 56px;
+  text-align:center;
+  font-size: 20px;
+  font-weight: 900;
+  border-radius: 14px;
+  border: 1px solid rgba(15,23,42,0.12);
+  background: rgba(255,255,255,0.85);
+  outline:none;
+  transition: box-shadow .18s var(--ease), transform .18s var(--ease), border-color .18s var(--ease);
+}
+body.app .otpBox:focus{
+  border-color: color-mix(in srgb, var(--primary) 55%, rgba(15,23,42,0.12));
+  box-shadow: var(--ring);
+  transform: translateY(-1px);
+}
+
+/* Botão principal  */
+body.app .twofaBtn{
+  margin-top: 4px;
+  width: 100%;
+  border: none;
+  cursor:pointer;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 950;
+  color:#fff;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: 0 18px 40px color-mix(in srgb, var(--primary) 22%, transparent);
+  transition: transform .14s var(--ease), filter .18s var(--ease), box-shadow .18s var(--ease);
+}
+body.app .twofaBtn:hover{
+  filter: brightness(1.03);
+  transform: translateY(-1px);
+  box-shadow: 0 22px 52px color-mix(in srgb, var(--primary) 26%, transparent);
+}
+body.app .twofaBtn i{ margin-right: 8px; }
+
+body.app .twofaHelp{
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid rgba(15,23,42,0.08);
+  color: var(--text-light);
+  font-size: 13px;
+}
+
+/* 2FA habilitado */
+body.app .twofaIcon--ok{
+  background: rgba(34,197,94,0.14);
+  color:#15803d;
+  border-color: rgba(34,197,94,0.25);
+}
+
+.tableWrap { overflow-x: auto; }
+
+.proTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.proTable th, .proTable td {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  white-space: nowrap;
+}
+
+.proTable thead th {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: rgba(0,0,0,0.65);
+}
+
+.mutedCenter {
+  text-align: center;
+  padding: 18px;
+  color: rgba(0,0,0,0.55);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.pill--ok { background: rgba(34,197,94,0.15); color: rgba(22,101,52,1); }
+.pill--warning { background: rgba(234,179,8,0.20); color: rgba(161,98,7,1); }
+.pill--danger { background: rgba(239,68,68,0.18); color: rgba(153,27,27,1); }
+
+.kpiBadge--warning {
+  background: rgba(234,179,8,0.15);
+  color: rgba(161,98,7,1);
+  border: 1px solid rgba(234,179,8,0.25);
+}
+.censoredBox{
+  position: relative;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 14px;
+  padding: 18px;
+  background: #fff;
+  overflow: hidden;
+  min-height: 220px;
+}
+
+.censoredMock{
+  filter: blur(6px);
+  opacity: .45;
+}
+
+.censoredRow{
+  height: 18px;
+  background: rgba(0,0,0,.08);
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+.censoredOverlay{
+  position: absolute;
+  inset: 0;
+  display:flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding: 22px;
+  backdrop-filter: blur(2px);
+  background: rgba(255,255,255,.75);
+  z-index: 2;
+}
+
+.censoredOverlay i{
+  font-size: 26px;
+  margin-bottom: 10px;
+}
+
+
+/* =========================
+   PROFILE / USUÁRIO
+========================= */
+
+body.app .profileCard{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  margin: 0 auto;
+  position: relative;
+}
+
+body.app .profileCard::before{
+  content:"";
+  display:block;
+  height:3px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+}
+
+body.app .profileHead{
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(15,23,42,0.08);
+  display:flex;
+  justify-content: space-between;
+  align-items:flex-start;
+  gap: 12px;
+}
+
+body.app .profileTitle{
+  margin: 0;
+  font-size: 18px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+}
+
+body.app .profileSubtitle{
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+body.app .profileGrid{
+  display:grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  padding: 18px;
+}
+
+/* Avatar coluna */
+body.app .profileAvatarCol{
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.70);
+}
+
+body.app .avatarWrap{
+  position: relative;
+
+
+  width: 180px;
+  height: 180px;
+  margin: 0 auto;
+
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f2f2f2;
+  border: 1px solid rgba(15,23,42,0.10);
+  cursor: pointer;
+}
+
+body.app .avatarWrap img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display:block;
+  border-radius: 50%;
+}
+
+body.app .avatarEditBtn{
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.88);
+  color: var(--text);
+
+  border-radius: 999px;
+  padding: 10px 12px;
+  font-weight: 900;
+  font-size: 13px;
+
+  display:flex;
+  align-items:center;
+  gap: 8px;
+
+  cursor: pointer;
+  transition: transform .14s var(--ease), background .18s var(--ease);
+}
+
+body.app .avatarEditBtn:hover{
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+body.app .avatarFile{
+  display:none;
+}
+
+body.app .profileHint{
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--text-light);
+  line-height: 1.35;
+}
+
+body.app .profileMsg{
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(11,18,32,0.75);
+}
+
+/* Dados coluna */
+body.app .profileInfoCol{
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.70);
+  display:flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+body.app .infoGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+body.app .infoItem{
+  border: 1px solid rgba(15,23,42,0.10);
+  background: rgba(255,255,255,0.85);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display:flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+body.app .infoLabel{
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(11,18,32,0.70);
+}
+
+body.app .infoValue{
+  font-size: 14px;
+  font-weight: 950;
+  color: rgba(11,18,32,0.92);
+}
+
+/* Ações */
+body.app .profileActions{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+body.app .btn-primary--small{
+  width: auto;
+  padding: 11px 14px;
+  border-radius: 14px;
+}
+
+/* Responsivo */
+@media (max-width: 980px){
+  body.app .profileGrid{
+    grid-template-columns: 1fr;
+  }
+  body.app .infoGrid{
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+@media (max-width: 900px){
+  .profileCard__body{
+    grid-template-columns: 1fr;
+  }
+  .profileGrid{
+    grid-template-columns: 1fr;
+  }
+}
+
+
+@media (max-width: 980px){
+  body.app .twofaLayout{
+    grid-template-columns: 1fr;
+  }
+  body.app .qrCard{
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  body.app .qrImg{
+    width: 200px;
+    height: 200px;
+  }
+  body.app .secretBox{
+    text-align: left;
+  }
+}
+
+
+@media (max-width: 900px){
+  body.app .authCard,
+  body.app .authCard--wide{
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 900px){
+  body.app aside{ display:none; }
+
+  body.app main{
+    margin-left: 0;
+    width: 100%;
+    padding: 18px;
+  }
+
+  body.app .kpi-container{
+    grid-template-columns: 1fr;
+  }
+
+  body.app .chartsGrid--2{
+    grid-template-columns: 1fr;
+  }
+
+  body.app .filtros-container form{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.app .twofaGrid{
+    grid-template-columns: 1fr;
+  }
+
+  body.app .formActions{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.app .formActions .btn,
+  body.app .formActions .btnGhost{
+    width: 100%;
+  }
+}

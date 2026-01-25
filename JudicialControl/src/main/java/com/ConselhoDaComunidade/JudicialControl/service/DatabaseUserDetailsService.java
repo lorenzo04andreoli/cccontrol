@@ -18,8 +18,9 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String cpf) throws UsernameNotFoundException {
-        User user = userRepository.findByCpf(cpf)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado com CPF: " + cpf));
+        String cpfNormalizado = cpf.replaceAll("\\D", "");
+        User user = userRepository.findByCpf(cpfNormalizado)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
         // Verifica se o usuário está temporariamente bloqueado
         if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {

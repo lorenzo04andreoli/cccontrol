@@ -3,141 +3,341 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
     <title>Dashboard</title>
+
+    <link rel="icon" href="/images/cc-logo.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/dash.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/app.css">
+
 </head>
-<body>
+<body class="app">
 
 <aside>
     <h2>Admin</h2>
     <ul>
         <li><a href="#"><i class="fas fa-home"></i> Dashboard</a></li>
-        <li><a href="#"><i class="fas fa-users"></i> Usuário</a></li>
+        <li><a href="/usuario"><i class="fas fa-users"></i> Usuário</a></li>
         <li><a href="/relatorios"><i class="fas fa-chart-line"></i> Relatórios</a></li>
-        <li><a th:href="@{/profile/2fa}"><i class="fas fa-cog"></i> Configurações</a></li>
+        <li><a th:href="@{/profile/2fa}"><i class="fas fa-shield-halved"></i> Autenticação</a></li>
         <li th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
             <a href="/admin/users/new"><i class="fas fa-user-plus"></i> Novo Usuário</a>
         </li>
-        <li><a href="/logout"><i class="fas fa-right-from-bracket"></i> Sair</a></li>
+        <li>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="linkLikeButton">
+                    <i class="fas fa-right-from-bracket"></i> Sair
+                </button>
+            </form>
+        </li>
     </ul>
 </aside>
 
 <main>
+
     <header>
-        <h1>Bem-vindo ao Painel Administrativo <span th:text="${nome}"></span></h1>
+        <h1>
+            Bem-vindo ao Painel Administrativo
+            <span th:text="${user}"></span>
+        </h1>
     </header>
 
     <section class="chart-container">
-        <h3>Reeducandos</h3>
 
-        <button onclick="abrirModalAdicionar()">
-            <i class="fas fa-user-plus"></i></button>
-        <div class="filtros-container">
+        <!-- TÍTULO + BOTÃO -->
+        <div class="section-header">
+            <div class="titleRow">
+                <h3 id="tituloTabela" th:text="${tabela == 'arquivados' ? 'Arquivados' : 'Reeducandos'}"></h3>
 
-            <form method="get" action="/">
-                <input type="text" name="termo" placeholder="Buscar por nome ou CPF" th:value="${termoBusca}" />
-                <select name="frequencia">
-                    <option value="">Todas as frequências</option>
-                    <option value="Mensal" th:selected="${frequenciaSelecionada == 'Mensal'}">Mensal</option>
-                    <option value="Bimestral" th:selected="${frequenciaSelecionada == 'Bimestral'}">Bimestral</option>
-                    <option value="Trimestral" th:selected="${frequenciaSelecionada == 'Trimestral'}">Trimestral</option>
+                <select id="tabelaSelect" name="tabela">
+                    <option value="reeducandos" th:selected="${tabela == null || tabela == 'reeducandos'}">Reeducandos</option>
+                    <option value="arquivados" th:selected="${tabela == 'arquivados'}">Arquivados</option>
                 </select>
-                <select name="filtro" id="filtro">
-                    <option value="" th:selected="${filtroStatus == null}">Todos</option>
-                    <option value="Atrasado" th:selected="${filtroStatus == 'Atrasado'}">Atrasados</option>
-                    <option value="Em dia" th:selected="${filtroStatus == 'Em dia'}">Em dia</option>
-                </select>
-                <button type="submit"><i class="fas fa-filter"></i>Filtrar</button>
-            </form>
+            </div>
+
+            <button id="btnAbrirAdicionar" class="btn-primary btn-icon" type="button"
+                    th:if="${tabela != 'arquivados' and #authorization.expression('hasAnyRole(''ADMIN'',''USER'')')}"
+                    title="Adicionar reeducando">
+                <i class="fas fa-user-plus"></i>
+            </button>
         </div>
 
-        <div class="total-reeducandos">
-            <strong>Resultados:</strong> <span th:text="${totalReeducandos}"></span>
-        </div>
 
-        <div class="pagination">
-            <span th:text="'Página ' + ${pagina.number + 1} + ' de ' + ${pagina.totalPages}"></span>
-            <div>
-                <a th:href="@{/?(page=${pagina.number - 1}, termo=${termoBusca}, frequencia=${frequenciaSelecionada}, filtro=${filtroStatus})}"
-                   th:if="${pagina.hasPrevious()}">← Anterior</a>
-                <a th:href="@{/?(page=${pagina.number + 1}, termo=${termoBusca}, frequencia=${frequenciaSelecionada}, filtro=${filtroStatus})}"
-                   th:if="${pagina.hasNext()}" style="margin-left: 15px;">Próxima →</a>
+        <div th:if="${canViewTabela and (tabela == null or tabela == 'reeducandos')}">
+            <div class="filtros-container"
+                 th:if="${tabela == null or tabela == 'reeducandos'}">
+
+                <form method="get" action="/">
+                    <input type="hidden" name="tabela" th:value="${tabela}" />
+                    <input type="text"
+                           name="termo"
+                           placeholder="Buscar por nome ou CPF"
+                           th:value="${termoBusca}" />
+
+                    <select name="frequencia">
+                        <option value="">Todas as frequências</option>
+                        <option value="Mensal" th:selected="${frequenciaSelecionada == 'Mensal'}">Mensal</option>
+                        <option value="Bimestral" th:selected="${frequenciaSelecionada == 'Bimestral'}">Bimestral</option>
+                        <option value="Trimestral" th:selected="${frequenciaSelecionada == 'Trimestral'}">Trimestral</option>
+                    </select>
+
+                    <select name="filtro" id="filtro">
+                        <option value="" th:selected="${filtroStatus == null}">Todos</option>
+                        <option value="Atrasado" th:selected="${filtroStatus == 'Atrasado'}">Atrasados</option>
+                        <option value="Pendente" th:selected="${filtroStatus == 'Pendente'}">Pendentes</option>
+                        <option value="Em dia" th:selected="${filtroStatus == 'Em dia'}">Em dia</option>
+                    </select>
+
+                    <select name="competencia">
+                        <option value="">Todos os meses</option>
+
+                        <option th:each="c : ${competencias}"
+                                th:value="${c.value}"
+                                th:text="${c.label}"
+                                th:selected="${c.value == competencia}">
+                        </option>
+                    </select>
+
+
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </form>
+            </div>
+
+            <div class="total-reeducandos"
+                 th:if="${tabela == null or tabela == 'reeducandos'}">
+                <strong>Resultados:</strong>
+                <span th:text="${totalReeducandos}"></span>
+            </div>
+
+            <div class="pagination"
+                 th:if="${tabela == null or tabela == 'reeducandos'}">
+                <span th:text="'Página ' + ${pagina.number + 1} + ' de ' + ${pagina.totalPages}"></span>
+
+                <div>
+                    <a th:href="@{/?(tabela=${tabela}, page=${pagina.number - 1}, termo=${termoBusca}, frequencia=${frequenciaSelecionada}, filtro=${filtroStatus}, competencia=${competencia})}"
+                       th:if="${pagina.hasPrevious()}">← Anterior</a>
+
+                    <a th:href="@{/?(tabela=${tabela}, page=${pagina.number + 1}, termo=${termoBusca}, frequencia=${frequenciaSelecionada}, filtro=${filtroStatus}, competencia=${competencia})}"
+                       th:if="${pagina.hasNext()}" style="margin-left: 15px;">
+                        Próxima →
+                    </a>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                <tr>
+                    <th><i class="fas fa-user"></i> Nome</th>
+                    <th><i class="fas fa-id-card"></i> CPF</th>
+                    <th><i class="fas fa-phone"></i> Telefone</th>
+                    <th><i class="fas fa-calendar-check"></i> Último Comparecimento</th>
+                    <th><i class="fas fa-clock"></i> Frequência</th>
+                    <th><i class="fas fa-circle-info"></i> Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="r : ${reeducandos}"
+                    th:attr="data-id=${r.id}"
+                    class="row-reeducando">
+                    <td th:text="${r.nome}"></td>
+                    <td th:text="${T(com.ConselhoDaComunidade.JudicialControl.util.MaskUtils).cpf(r.cpf)}"></td>
+                    <td th:text="${r.telefone}"></td>
+                    <td th:text="${#temporals.format(r.dia, 'dd/MM/yyyy')}"></td>
+                    <td th:text="${r.frequencia}"></td>
+                    <td th:text="${r.status}"
+                        th:class="'status ' + (${r.status == 'Em dia'} ? 'status-verde'
+                      : (${r.status == 'Pendente'} ? 'status-amarelo'
+                      : (${r.status == 'Atrasado'} ? 'status-vermelho' : '')))">
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:unless="${canViewTabela}" class="censoredBox">
+            <div class="censoredOverlay">
+                <i class="fas fa-lock"></i>
+                <h3>Acesso restrito</h3>
+                <p>Seu perfil permite apenas visualizar relatórios de atrasos. A tabela de reeducandos não está disponível.</p>
+            </div>
+
+            <div class="censoredMock">
+                <div class="censoredRow" th:each="i : ${#numbers.sequence(1,8)}"></div>
             </div>
         </div>
 
-        <table>
-            <thead>
-            <tr>
-                <th><i class="fas fa-user"></i> Nome</th>
-                <th><i class="fas fa-id-card"></i> CPF</th>
-                <th><i class="fas fa-phone"></i> Telefone</th>
-                <th><i class="fas fa-calendar-check"></i> Último Comparecimento</th>
-                <th><i class="fas fa-clock"></i> Frequência</th>
-                <th><i class="fas fa-circle-info"></i> Status</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="r : ${reeducandos}" th:onclick="'abrirModal(' + ${r.id} + ')'" style="cursor: pointer;">
-                <td th:text="${r.nome}">João</td>
-                <td th:text="${r.cpf}">000.000.000-00</td>
-                <td th:text="${r.telefone}">(00) 00000-0000</td>
-                <td th:text="${#temporals.format(r.dia, 'dd/MM/yyyy')}">01/07/2025</td>
-                <td th:text="${r.frequencia}">Mensal</td>
-                <td th:text="${r.status}"
-                    th:classappend="${r.status == 'Em dia'} ? 'status-verde' : (${r.status == 'Atrasado'} ? 'status-vermelho' : '')">
-                </td>
-            </tr>
-            </tbody>
-        </table>
+        <div th:if="${canViewTabela and tabela == 'arquivados'}">
+            <div class="filtros-container" th:if="${canViewTabela and tabela == 'arquivados'}">
+                <form method="get" action="/">
+                    <input type="hidden" name="tabela" value="arquivados"/>
+
+                    <input type="text"
+                           name="termo"
+                           placeholder="Buscar por nome ou CPF"
+                           th:value="${termoBusca}" />
+
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </form>
+            </div>
+
+            <div class="total-reeducandos" th:if="${canViewTabela and tabela == 'arquivados'}">
+                <strong>Resultados:</strong>
+                <span th:text="${totalArquivados}"></span>
+            </div>
+
+            <div class="pagination" th:if="${canViewTabela and tabela == 'arquivados'}">
+                <span th:text="'Página ' + ${pagina.number + 1} + ' de ' + ${pagina.totalPages}"></span>
+
+                <div>
+                    <a th:href="@{/?(tabela=${tabela}, page=${pagina.number - 1}, termo=${termoBusca})}"
+                       th:if="${pagina.hasPrevious()}">← Anterior</a>
+
+                    <a th:href="@{/?(tabela=${tabela}, page=${pagina.number + 1}, termo=${termoBusca})}"
+                       th:if="${pagina.hasNext()}" style="margin-left: 15px;">
+                        Próxima →
+                    </a>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                <tr>
+                    <th><i class="fas fa-user"></i> Nome</th>
+                    <th><i class="fas fa-id-card"></i> CPF</th>
+                    <th><i class="fas fa-phone"></i> Telefone</th>
+                    <th><i class="fas fa-folder-closed"></i> Observação</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="a : ${arquivados}">
+                    <td th:text="${a.nome}"></td>
+                    <td th:text="${T(com.ConselhoDaComunidade.JudicialControl.util.MaskUtils).cpf(a.cpf)}"></td>
+                    <td th:text="${a.telefone}"></td>
+                    <td th:text="${a.observacao}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </section>
 </main>
+<div th:if="${canViewTabela}">
+    <!-- MODAL EDIÇÃO -->
+    <div id="modal" class="modal"
+         th:if="${#authorization.expression('hasAnyRole(''ADMIN'',''USER'')')}">
 
-<div id="modal" class="modal hidden">
-    <div class="modal-content">
-        <span class="close" onclick="fecharModal()">&times;</span>
-        <form id="formReeducando" method="post">
-            <input type="hidden" id="id" name="id">
-            <label>Nome:</label>
-            <input type="text" id="nome" name="nome" readonly>
-            <label>CPF:</label>
-            <input type="text" id="cpf" name="cpf" readonly>
-            <label>Telefone:</label>
-            <input type="text" id="telefone" name="telefone">
-            <label>Último Comparecimento:</label>
-            <input type="date" id="dia" name="dia">
-            <button type="submit">Atualizar</button>
-        </form>
-        <button onclick="confirmarExclusao()">Excluir Reeducando</button>
+        <div class="modal-content">
+            <span class="close" id="btnFecharModalEdicao">&times;</span>
+
+            <form id="formReeducando" method="post">
+                <input type="hidden" id="id" name="id">
+
+                <label>Autos:</label>
+                <div class="procRow">
+                    <span id="autosText" class="procBadge">—</span>
+
+                    <button type="button" class="btn-copy" id="btnCopiarAutos" title="Copiar número do processo">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+
+                <label>Nome:</label>
+                <input type="text" id="nome" name="nome" readonly>
+
+                <label>CPF:</label>
+                <input type="text" id="cpf" name="cpf" readonly>
+
+                <label>Telefone:</label>
+                <input type="text" id="telefone" name="telefone">
+
+                <label>Último Comparecimento:</label>
+                <input type="date" id="dia" name="dia">
+
+                <div class="modalActions">
+                    <button type="submit" class="btn-primary">Atualizar</button>
+
+                    <button type="button" class="btnDanger btnDanger--outline" id="btnExcluirReeducando">
+                        Excluir Reeducando
+                    </button>
+                    <button type="button" class="btnDanger" id="btnArquivarReeducando">
+                        Arquivar
+                    </button>
+                    <div id="modalConfirmArquivar" class="miniModal">
+                        <div class="miniModalContent">
+                            <p>Tem certeza que deseja arquivar?</p>
+                            <div class="miniActions">
+                                <button type="button" id="btnConfirmArquivarSim" class="btnDanger">Sim</button>
+                                <button type="button" id="btnConfirmArquivarNao" class="btn-primary">Não</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="modalObsArquivar" class="miniModal">
+                        <div class="miniModalContent">
+                            <p>Informe a observação do arquivamento:</p>
+                            <textarea id="obsArquivamento" rows="4" placeholder="Ex: processo arquivado, concluído, transferência..."></textarea>
+
+                            <div class="miniActions">
+                                <button type="button" id="btnSalvarArquivamento" class="btnDanger">Arquivar</button>
+                                <button type="button" id="btnCancelarObsArquivar" class="btn-primary">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                </div>
+
+            </form>
+
+
+        </div>
     </div>
-</div>
 
-<div id="modalAdicionar" class="modal hidden">
-    <div class="modal-content">
-        <span class="close" onclick="fecharModalAdicionar()">&times;</span>
-        <form id="formAdicionarReeducando" method="post">
-            <label>Nome:</label>
-            <input type="text" id="novoNome" name="nome" required>
-            <label>CPF:</label>
-            <input type="text" id="novoCpf" name="cpf" required>
-            <label>Telefone:</label>
-            <input type="text" id="novoTelefone" name="telefone">
-            <label>Último Comparecimento:</label>
-            <input type="date" id="novoDia" name="dia">
-            <label>Frequência:</label>
-            <select id="novaFrequencia" name="frequencia" required>
-                <option value="">Selecione</option>
-                <option value="Mensal">Mensal</option>
-                <option value="Bimestral">Bimestral</option>
-                <option value="Trimestral">Trimestral</option>
-            </select>
-            <button type="submit">Salvar</button>
-        </form>
+    <!-- MODAL ADIÇÃO -->
+    <div id="modalAdicionar" class="modal">
+        <div class="modal-content">
+            <span class="close" id="btnFecharModalAdicionar">&times;</span>
+
+            <form id="formAdicionarReeducando" method="post">
+                <label>Nome:</label>
+                <input type="text" id="novoNome" name="nome" placeholder="Nome" required>
+
+                <label>Nº do processo:</label>
+                <input type="text" id="novoAutos" name="autos" placeholder="Ex: 0001234-56.2025.8.16.0129">
+
+                <label>CPF:</label>
+                <input type="text" id="novoCpf" name="cpf" placeholder="Cpf" required>
+
+                <label>Telefone:</label>
+                <input type="text" id="novoTelefone" name="telefone">
+
+                <label>Último Comparecimento:</label>
+                <input type="date" id="novoDia" name="dia">
+
+                <label>Frequência:</label>
+                <select id="novaFrequencia" name="frequencia" required>
+                    <option value="">Selecione</option>
+                    <option value="Mensal">Mensal</option>
+                    <option value="Bimestral">Bimestral</option>
+                    <option value="Trimestral">Trimestral</option>
+                </select>
+
+                <button type="submit" class="btn-primary">Salvar</button>
+            </form>
+        </div>
     </div>
-</div>
 
-<script src="/js/modal-edicao.js"></script>
-<script src="/js/modal-adicao.js"></script>
-<script src="/js/mascaras.js"></script>
+    <script src="/js/csrf.js"></script>
+    <script src="/js/tabela-select.js"></script>
+    <script th:if="${#authorization.expression('hasAnyRole(''ADMIN'',''USER'')')}"  src="/js/modal-edicao.js"></script>
+    <script th:if="${#authorization.expression('hasAnyRole(''ADMIN'',''USER'')')}"  src="/js/modal-adicao.js"></script>
+    <script src="/js/mascaras.js"></script>
+</div>
 </body>
 </html>

@@ -17,6 +17,9 @@ public class UserRegistrationDto {
     @NotEmpty(message = "Confirmação de senha é obrigatória")
     private String confirmPassword;
 
+    @NotEmpty(message = "Tipo de acesso é obrigatório")
+    private String role;
+
     public String getNome() {
         return nome;
     }
@@ -30,7 +33,8 @@ public class UserRegistrationDto {
     }
 
     public void setCpf(String cpf) {
-        this.cpf = cpf;
+
+        this.cpf = (cpf == null) ? null : cpf.replaceAll("\\D", "");
     }
 
     public String getSenha() {
@@ -47,6 +51,14 @@ public class UserRegistrationDto {
 
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public boolean isCpfValido(){

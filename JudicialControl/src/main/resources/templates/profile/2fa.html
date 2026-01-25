@@ -1,44 +1,174 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-br" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="utf-8"/>
-    <title>2FA - Perfil</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>2FA • Perfil</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/app.css">
+    <link rel="icon" href="/images/cc-logo.png" type="image/png">
 </head>
-<body>
-<h2>Autenticação de Dois Fatores (2FA)</h2>
 
-<div th:if="${twoFactorEnabled}">
-    <p>2FA já está habilitado na sua conta.</p>
-    <form th:action="@{/profile/2fa/disable}" method="post">
-        <input type="hidden" name="confirm" value="true"/>
-        <button type="submit">Desabilitar 2FA</button>
-    </form>
-</div>
+<body class="app">
+<aside>
+    <h2>Admin</h2>
+    <ul>
+        <li><a href="/"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li><a href="#"><i class="fas fa-users"></i> Usuário</a></li>
+        <li><a href="/relatorios"><i class="fas fa-chart-line"></i> Relatórios</a></li>
+        <li><a th:href="@{/profile/2fa}"><i class="fas fa-shield-halved"></i> Autenticação</a></li>
+        <li th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+            <a href="/admin/users/new"><i class="fas fa-user-plus"></i> Novo Usuário</a>
+        </li>
+        <li>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="linkLikeButton">
+                    <i class="fas fa-right-from-bracket"></i> Sair
+                </button>
+            </form>
+        </li>
+    </ul>
+</aside>
 
-<div th:unless="${twoFactorEnabled}">
-    <p>Escaneie este QR no Google Authenticator ou adicione manualmente usando o secret abaixo.</p>
+<main>
+    <header class="pageHeader">
+        <div>
+            <h1>Autenticação de Dois Fatores</h1>
+            <p class="pageHint">Proteja sua conta exigindo um código do aplicativo autenticador.</p>
+        </div>
+    </header>
 
-    <div>
-        <p>Secret: <span th:text="${secret}">SECRET</span></p>
-
-        <!-- Se você gerou otpAuthUrl, pode criar um <img> apontando para um endpoint que gera QR no servidor ou usar Google Chart API: -->
-        <p>QR Code:</p>
-        <!-- Exemplo usando Google Chart API (pode expor secret na URL) -->
-        <img th:src="@{'https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=' + ${otpAuthUrl}}" alt="QR Code"/>
-
-        <p>Ou gere localmente com ZXing em um endpoint /qrcode?data=... e exiba /qrcode?data=${otpAuthUrl}</p>
-
-        <form th:action="@{/profile/2fa/enable}" method="post">
-            <label for="code">Digite o código do app para confirmar habilitação:</label>
-            <input id="code" name="code" pattern="\d{6}" maxlength="6" required>
-            <button type="submit">Habilitar 2FA</button>
-        </form>
+    <div class="alert" th:if="${param.msg}">
+        <span th:text="${param.msg}"></span>
     </div>
-</div>
 
-<div th:if="${param.msg}">
-    <p th:text="${param.msg}"></p>
-</div>
+    <!-- =========================
+         ESTADO: 2FA JÁ HABILITADO
+    ========================== -->
+    <section class="twofaCard" th:if="${twoFactorEnabled}">
+        <header class="twofaHead">
+            <div class="twofaTitle">
+                <span class="twofaIcon twofaIcon--ok"><i class="fas fa-circle-check"></i></span>
+                <div>
+                    <h2>2FA habilitado</h2>
+                    <p>Seu login está protegido com autenticação de dois fatores.</p>
+                </div>
+            </div>
+        </header>
 
+        <div class="twofaBody">
+            <form th:action="@{/profile/2fa/disable}" method="post" class="twofaForm">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="hidden" name="confirm" value="true"/>
+                <div class="authField">
+                    <label for="disableCode">Código do app (6 dígitos)</label>
+                    <input type="text"
+                           id="disableCode"
+                           name="code"
+                           inputmode="numeric"
+                           maxlength="6"
+                           placeholder="000000"
+                           required>
+                </div>
+                <button class="twofaBtn" type="submit">
+                    <i class="fas fa-shield-halved"></i> Desabilitar 2FA
+                </button>
+
+
+                <div class="twofaHelp">
+                    <p><strong>Atenção:</strong> ao desabilitar, você voltará a entrar apenas com senha.</p>
+                </div>
+            </form>
+        </div>
+
+
+    </section>
+
+    <!-- =========================
+         ESTADO: 2FA DESABILITADO
+    ========================== -->
+    <section class="twofaCard twofaCard--setup" th:unless="${twoFactorEnabled}">
+        <header class="twofaHead">
+            <div class="twofaTitle">
+                <span class="twofaIcon"><i class="fas fa-qrcode"></i></span>
+                <div>
+                    <h2>Habilitar 2FA</h2>
+                    <p>Escaneie o QR Code no Google Authenticator (ou app compatível) e confirme o código.</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="twofaBody">
+            <div class="twofaLayout">
+                <!-- QR + Secret -->
+                <div class="twofaLeft">
+                    <div class="qrCard">
+                        <img class="qrImg"
+                             th:src="'data:image/png;base64,' + ${qrCodeBase64}"
+                             alt="QR Code 2FA"/>
+
+
+                        <div class="qrMeta">
+                            <div class="secretBox">
+                                <div>
+                                    <p class="secretLabel">Secret</p>
+                                    <p class="secretValue" th:text="${secret}">SECRET</p>
+                                </div>
+
+                                <button class="btnGhostSmall" type="button" id="copySecret">
+                                    <i class="fas fa-copy"></i> Copiar
+                                </button>
+                            </div>
+
+                            <p class="twofaNote">
+                                Dica: use o QR Code sempre que possível. O secret é para cadastro manual.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OTP -->
+                <div class="twofaRight">
+                    <form th:action="@{/profile/2fa/enable}" method="post" class="twofaForm" id="twofaEnableForm">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                        <div class="twofaFormHead">
+                            <h3>Confirmar código</h3>
+                            <p>Digite o código de 6 dígitos do seu app autenticador.</p>
+                        </div>
+
+                        <div class="otp">
+                            <input type="text" inputmode="numeric" maxlength="1" class="otpBox" aria-label="Dígito 1"/>
+                            <input type="text" inputmode="numeric" maxlength="1" class="otpBox" aria-label="Dígito 2"/>
+                            <input type="text" inputmode="numeric" maxlength="1" class="otpBox" aria-label="Dígito 3"/>
+                            <input type="text" inputmode="numeric" maxlength="1" class="otpBox" aria-label="Dígito 4"/>
+                            <input type="text" inputmode="numeric" maxlength="1" class="otpBox" aria-label="Dígito 5"/>
+                            <input type="text" inputmode="numeric" maxlength="1" class="otpBox" aria-label="Dígito 6"/>
+                        </div>
+
+                        <input type="hidden" id="otpValue" name="code" required pattern="\d{6}">
+
+                        <button class="twofaBtn" type="submit">
+                            <i class="fas fa-shield-halved"></i> Habilitar 2FA
+                        </button>
+
+                        <div class="twofaHelp">
+                            <p><strong>Não consegue escanear?</strong> Cadastre manualmente usando o secret ao lado.</p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<script src="/js/2fa-profile.js"></script>
 </body>
 </html>

@@ -13,7 +13,7 @@ function aplicarMascaraTelefone(campo) {
         .replace(/(\d{5})(\d{4})$/, '$1-$2');
 }
 
-// Aplicar máscaras nos inputs de adição
+
 document.getElementById("novoCpf").addEventListener("input", function () {
     aplicarMascaraCPF(this);
 });
@@ -22,7 +22,7 @@ document.getElementById("novoTelefone").addEventListener("input", function () {
     aplicarMascaraTelefone(this);
 });
 
-// Aplicar máscara nos inputs de edição
+
 document.getElementById("cpf").addEventListener("input", function () {
     aplicarMascaraCPF(this);
 });

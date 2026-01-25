@@ -17,8 +17,13 @@ public class TOTPUtil {
     public static String generateSecret(){
         byte[] bytes = new byte[20];
         random.nextBytes(bytes);
-        return base32.encodeToString(bytes);
+        return base32.encodeToString(bytes)
+                .replace("=", "")
+                .replace("\n", "")
+                .replace("\r", "")
+                .trim();
     }
+
 
     public static String getOtpAuthURL(String issuer, String accountName, String secret){
         return String.format("otpauth://totp/%s:%s?secret=%s&issuer=%s&algorithm=SHA1&digits=6&period=30"

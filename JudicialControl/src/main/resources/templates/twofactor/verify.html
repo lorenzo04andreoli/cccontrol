@@ -1,25 +1,72 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="utf-8"/>
-    <title>Verificação 2FA</title>
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-<div class = "Container">
-    <div class = divForm>
-        <h2>Autenticação em dois fatores</h2>
-        <p>Digite o código do aplicativo autenticador </p>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-        <form th:action="@{/two-factor/verify}" method="post">
-            <label for="code">Código (6 dígitos)</label>
-            <input type="text" name="code" id="code" maxlength="6" required pattern="\d{6}">
-            <button type="submit">Verificar</button>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/auth.css">
+    <link rel="icon" href="/images/cc-logo.png" type="image/png">
+    <title>Verificação 2FA • Conselho</title>
+</head>
+
+<body class="auth">
+<div class="bg" aria-hidden="true"></div>
+
+<main class="layout">
+    <section class="card" role="region" aria-label="Verificação em dois fatores">
+        <header class="brand">
+            <img class="brandLogoTop" src="/images/cc-logo.png" alt="Logo do Conselho">
+
+            <div class="brandText">
+                <h1>Autenticação em dois fatores</h1>
+                <p>Digite o código do aplicativo autenticador para continuar.</p>
+            </div>
+        </header>
+
+        <!-- Erro -->
+        <div class="alert alert--error" th:if="${param.error}">
+            Código inválido. Tente novamente.
+        </div>
+
+        <form class="form" th:action="@{/two-factor/verify}" method="post" autocomplete="one-time-code">
+            <div class="field">
+                <label for="otpValue">Código (6 dígitos)</label>
+
+                <div class="otp" aria-label="Código de 6 dígitos">
+                    <input type="text" inputmode="numeric" maxlength="1" class="otpBox" aria-label="Dígito 1" />
+                    <input type="text" inputmode="numeric" maxlength="1" class="otpBox" aria-label="Dígito 2" />
+                    <input type="text" inputmode="numeric" maxlength="1" class="otpBox" aria-label="Dígito 3" />
+                    <input type="text" inputmode="numeric" maxlength="1" class="otpBox" aria-label="Dígito 4" />
+                    <input type="text" inputmode="numeric" maxlength="1" class="otpBox" aria-label="Dígito 5" />
+                    <input type="text" inputmode="numeric" maxlength="1" class="otpBox" aria-label="Dígito 6" />
+                </div>
+
+                <input type="hidden" name="code" id="otpValue" required pattern="\\d{6}" />
+            </div>
+
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+            <button class="btn" type="submit">
+                <span>Verificar</span>
+            </button>
+
+            <footer class="footer">
+                <p>Ambiente seguro • Conselho</p>
+                <p class="dev">
+                    &#169; Desenvolvido por Eternize
+                    <img src="/images/ETERNIZE-LOGO-2.png" alt="Logo Eternize">
+                </p>
+            </footer>
         </form>
-    </div>
-</div>
-<div th:if="${param.error}">
-    Código inválido. Tente novamente.
-</div>
+    </section>
+</main>
+
+<script src="/js/enable-2fa.js"></script>
+<script src="/js/disable-2fa.js"></script>
+
 </body>
 </html>

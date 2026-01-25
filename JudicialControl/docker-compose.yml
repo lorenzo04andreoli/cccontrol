@@ -1,0 +1,78 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: judicialcontrol-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-judicialcontrol}
+      MYSQL_USER: app
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root123}
+
+
+
+    volumes:
+      - db_data:/var/lib/mysql
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root123}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    container_name: judicialcontrol-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8443:8443"
+    environment:
+      # ===== Spring profile =====
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+
+      # ===== DB  =====
+      DB_URL: jdbc:mysql://db:3306/${DB_NAME:-judicialcontrol}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_USER: app
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      JPA_DDL_AUTO: validate
+      JPA_SHOW_SQL: false
+
+
+      # ===== SSL =====
+      SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:-}
+
+      # ===== AWS S3  =====
+      AWS_REGION: ${AWS_REGION:-sa-east-1}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-}
+      AWS_S3_PUBLIC_BASE_URL: ${AWS_S3_PUBLIC_BASE_URL:-}
+
+      # ===== Storage provider =====
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+      STORAGE_LOCAL_ROOT: /app/uploads
+
+      # ===== tuning =====
+      JAVA_OPTS: ${JAVA_OPTS:--Xms256m -Xmx512m}
+    volumes:
+
+      - ./keystore/keystore.p12:/app/keystore.p12:ro
+      - app_uploads:/app/uploads
+      - app_logs:/app/logs
+    command: >
+      sh -c "
+      java $JAVA_OPTS
+      -Dserver.ssl.key-store=/app/keystore.p12
+      -Dserver.ssl.key-store-password=$${SSL_KEYSTORE_PASSWORD}
+      -jar app.jar
+      "
+
+volumes:
+  db_data:
+  app_uploads:
+  app_logs:

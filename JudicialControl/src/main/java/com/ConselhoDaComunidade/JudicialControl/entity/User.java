@@ -40,11 +40,16 @@ public class User implements UserDetails {
 
     private LocalDateTime lockedUntil;
 
-    @Column(name = "totp_secret", length = 128)
+    @Column(name = "totp_secret", length = 512)
     private String totpSecret;
 
     @Column(name = "two_factor_enabled")
     private boolean twoFactorEnabled = false;
+
+    @Column(name = "foto_url", length = 500)
+    private String fotoUrl;
+
+
 
 
     // ========= MÉTODOS PADRÃO =========
@@ -72,7 +77,6 @@ public class User implements UserDetails {
 
     public LocalDateTime getLockedUntil() { return lockedUntil; }
 
-    // getters / setters
     public String getTotpSecret() {
         return totpSecret;
     }
@@ -88,6 +92,10 @@ public class User implements UserDetails {
     public void setTwoFactorEnabled(boolean twoFactorEnabled) {
         this.twoFactorEnabled = twoFactorEnabled;
     }
+
+    public String getFotoUrl() { return fotoUrl; }
+
+    public void setFotoUrl(String fotoUrl) { this.fotoUrl = fotoUrl; }
 
     // ========= MÉTODOS DE BLOQUEIO =========
 
@@ -108,7 +116,7 @@ public class User implements UserDetails {
         this.lockedUntil = null;
     }
 
-    /** Bloqueia o usuário por X minutos */
+    /** Bloqueia o usuário */
     public void lockAccount(int minutes) {
         this.lockedUntil = LocalDateTime.now().plusMinutes(minutes);
     }

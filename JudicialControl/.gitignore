@@ -1,10 +1,26 @@
-HELP.md
+# ===== Maven / Java =====
 target/
 .mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
-### STS ###
+# ===== Environment / Secrets =====
+.env
+*.env
+*.p12
+*.jks
+*.pem
+
+# ===== Runtime folders =====
+logs/
+uploads/
+../logs/
+# ===== IntelliJ IDEA =====
+.idea
+*.iws
+*.iml
+*.ipr
+../.idea/
+
+# ===== Eclipse / STS =====
 .apt_generated
 .classpath
 .factorypath
@@ -13,24 +29,17 @@ target/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-*.p12
-*.jks
-*.pem
-
-### NetBeans ###
+# ===== NetBeans =====
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
 build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
+# ===== VS Code =====
 .vscode/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
