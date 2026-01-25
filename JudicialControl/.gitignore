@@ -43,3 +43,10 @@ build/
 # ===== OS =====
 .DS_Store
 Thumbs.db
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
