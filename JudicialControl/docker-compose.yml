@@ -66,11 +66,9 @@ services:
       - app_logs:/app/logs
     command: >
       sh -c "
-      java $JAVA_OPTS
-      -Dserver.ssl.key-store=/app/keystore.p12
-      -Dserver.ssl.key-store-password=$${SSL_KEYSTORE_PASSWORD}
-      -jar app.jar
+      java $JAVA_OPTS -jar app.jar
       "
+
 
 volumes:
   db_data:
