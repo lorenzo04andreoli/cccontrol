@@ -41,7 +41,8 @@ services:
       DB_USER: app
       DB_PASSWORD: ${DB_PASSWORD}
 
-      JPA_DDL_AUTO: validate
+      JPA_DDL_AUTO: ${JPA_DDL_AUTO:-validate}
+
       JPA_SHOW_SQL: false
 
 
