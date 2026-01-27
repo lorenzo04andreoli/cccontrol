@@ -161,7 +161,7 @@ A aplicação roda em uma **instância AWS EC2**, utilizando **Docker Compose** 
 ### 📐 Diagrama de Arquitetura
 
 <p align="center">
-  <img src="docs/architecture.png" alt="Arquitetura do Sistema" width="900"/>
+  <img src="/JudicialControl/docs/architecture.png" alt="Arquitetura do Sistema" width="900"/>
 </p>
 
 > A arquitetura é baseada em Docker e executada em uma instância AWS EC2,
