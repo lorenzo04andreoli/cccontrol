@@ -16,7 +16,7 @@ Hoje, o controle é **automatizado, seguro e centralizado**, reduzindo erros hum
 
 ---
 
-## 🎯 Objetivo do Sistema
+## Objetivo do Sistema
 
 - Automatizar o controle de comparecimentos judiciais  
 - Identificar automaticamente:
@@ -29,13 +29,13 @@ Hoje, o controle é **automatizado, seguro e centralizado**, reduzindo erros hum
 
 ---
 
-## 🧠 Regra de Negócio 
+## Regra de Negócio 
 
 Cada reeducando possui:
 - Data do último comparecimento
 - Frequência definida judicialmente
 
-### 📆 Frequências suportadas
+### Frequências suportadas
 
 | Frequência  | Intervalo |
 |------------|-----------|
@@ -53,9 +53,9 @@ Cada reeducando possui:
 
 ---
 
-## ⚙️ Funcionalidades Principais
+## Funcionalidades Principais
 
-### 👥 Gestão de Reeducandos
+###  Gestão de Reeducandos
 - Cadastro e edição
 - Arquivamento com histórico
 - Registro automático de comparecimentos
@@ -67,13 +67,13 @@ Cada reeducando possui:
 - Status
 - Competência (mês/ano)
 
-### 📊 Relatórios
+### Relatórios
 - Resumo geral (Atrasados, Pendentes e Em dia)
 - Comparecimentos por mês
 - Tendência de atrasos
 - Próximos comparecimentos (janela configurável)
 
-## 🔐 Segurança
+## Segurança
 
 - Autenticação por **CPF e senha**
 - Senhas armazenadas com **hash BCrypt**
@@ -85,7 +85,7 @@ Cada reeducando possui:
   - Headers de segurança
   - HTTPS com certificado SSL
 
-### 👤 Perfis de Acesso
+### Perfis de Acesso
 
 O sistema utiliza **controle de acesso baseado em papéis (RBAC)**, garantindo que cada usuário visualize e execute apenas as ações permitidas pelo seu perfil.
 
@@ -123,7 +123,7 @@ O sistema utiliza **controle de acesso baseado em papéis (RBAC)**, garantindo q
 
 ---
 
-## 🧰 Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 ### Backend
 - **Java 17**
@@ -154,11 +154,11 @@ O sistema utiliza **controle de acesso baseado em papéis (RBAC)**, garantindo q
 
 ---
 
-## 🧱 Arquitetura da Aplicação
+## Arquitetura da Aplicação
 
 A aplicação roda em uma **instância AWS EC2**, utilizando **Docker Compose** para orquestrar os containers de aplicação e banco de dados.
 
-### 📐 Diagrama de Arquitetura
+### Diagrama de Arquitetura
 
 <p align="center">
   <img src="/JudicialControl/docs/architecture.png" alt="Arquitetura do Sistema" width="900"/>
@@ -170,7 +170,7 @@ A aplicação roda em uma **instância AWS EC2**, utilizando **Docker Compose** 
 
 ---
 
-### 🔁 Fluxo de Comunicação
+### Fluxo de Comunicação
 
 1. Usuário acessa o sistema via HTTPS (porta 8443)
 2. EC2 recebe a requisição
@@ -181,7 +181,7 @@ A aplicação roda em uma **instância AWS EC2**, utilizando **Docker Compose** 
 
 ---
 
-## 🐳 Docker & Containers
+## Docker & Containers
 
 ### Containers
 - `judicialcontrol-app` → Spring Boot (Java)
@@ -207,7 +207,7 @@ Isso elimina a necessidade de exposição do banco de dados para a rede externa.
 
 ---
 
-## ☁️ Deploy na AWS
+## Deploy na AWS
 
 - EC2 Linux (Ubuntu)
 - Tipo de instância: `t3.small`
@@ -218,7 +218,7 @@ Isso elimina a necessidade de exposição do banco de dados para a rede externa.
 
 ---
 
-## 🚀 Aprendizados
+## Aprendizados
 
 Este projeto consolidou conhecimentos em:
 - Arquitetura backend
@@ -233,7 +233,7 @@ Este projeto consolidou conhecimentos em:
 
 ---
 
-## 👨‍💻 Autor
+## Autor
 
 **Lorenzo Andreoli**  
 Desenvolvedor Backend | Java | Spring Boot | MySQL | Docker | AWS  
