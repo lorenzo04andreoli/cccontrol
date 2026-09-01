@@ -1,4 +1,4 @@
-# JudicialControl – Sistema de Controle de Reeducandos
+# CCControl – Sistema de Controle de Reeducandos
 
 ![Java](https://img.shields.io/badge/Java-17-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen)
@@ -6,7 +6,7 @@
 ![AWS](https://img.shields.io/badge/AWS-EC2-orange)
 
 
-O **JudicialControl** é um sistema web desenvolvido para automatizar o controle de reeducandos que cumprem penas alternativas e devem comparecer periodicamente em juízo, sendo acompanhados pelo **Conselho da Comunidade**.
+O **CCControl** é um sistema web desenvolvido para automatizar o controle de reeducandos que cumprem penas alternativas e devem comparecer periodicamente em juízo, sendo acompanhados pelo **Conselho da Comunidade**.
 
 Antes do sistema, todo o processo era **manual**, exigindo a análise individual de mais de 200 fichas físicas todo fim de mês.  
 Hoje, o controle é **automatizado, seguro e centralizado**, reduzindo erros humanos e aumentando a eficiência operacional.
